@@ -1,10 +1,10 @@
-import React, { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
-import ApperIcon from "@/components/ApperIcon"
-import Button from "@/components/atoms/Button"
-import SearchBar from "@/components/molecules/SearchBar"
-import CategoryNav from "@/components/molecules/CategoryNav"
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import ApperIcon from "@/components/ApperIcon";
+import SearchBar from "@/components/molecules/SearchBar";
+import CategoryNav from "@/components/molecules/CategoryNav";
+import Button from "@/components/atoms/Button";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -48,10 +48,8 @@ const Header = () => {
                 })}</span>
               </span>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link to="/admin" className="hover:text-primary transition-colors">
-                Admin Panel
-              </Link>
+<div className="flex items-center space-x-4">
+              <span className="text-xs opacity-75">Real-time News Platform</span>
             </div>
           </div>
         </div>
@@ -91,15 +89,9 @@ const Header = () => {
           <div className="hidden lg:flex items-center space-x-4">
             <SearchBar 
               onSearch={handleSearch}
-              className="w-64"
+              className="w-48 xl:w-64"
               placeholder="Search breaking news..."
             />
-            <Link to="/admin">
-              <Button variant="outline" size="sm" className="bg-gradient-to-r from-primary/10 to-orange-500/10 border-primary/30 text-primary hover:bg-primary hover:text-white transition-all duration-300">
-                <ApperIcon name="Settings" size={16} className="mr-2" />
-                Admin Panel
-              </Button>
-            </Link>
           </div>
           {/* Mobile Actions */}
           <div className="flex lg:hidden items-center space-x-2">
@@ -163,17 +155,7 @@ const Header = () => {
                   >
                     <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                     <span>LIVE COVERAGE</span>
-                  </Link>
-                </div>
-<div className="pt-4 border-t border-gray-200">
-                  <Link
-                    to="/admin"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 text-secondary hover:bg-gradient-to-r hover:from-primary/10 hover:to-orange-500/10 rounded-lg transition-all duration-300 group"
-                  >
-                    <ApperIcon name="Settings" size={18} className="group-hover:text-primary transition-colors" />
-                    <span className="group-hover:text-primary transition-colors font-medium">Admin Panel</span>
-                  </Link>
+</Link>
                 </div>
               </div>
             </div>

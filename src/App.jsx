@@ -136,7 +136,7 @@ function AppContent() {
           <Route index element={<HomePage />} />
           <Route path="/article/:id" element={<ArticlePage />} />
           <Route path="/category/:category" element={<CategoryPage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+<Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/article/:id?" element={<ArticleEditor />} />
         </Route>
       </Routes>
