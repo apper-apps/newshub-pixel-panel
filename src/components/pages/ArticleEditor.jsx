@@ -455,8 +455,9 @@ const handleAddLiveUpdate = async () => {
                               Publish Live Update
                             </>
                           )}
-                        </Button>
+</Button>
                       </div>
+                    </div>
                   </div>
 
                   {/* Updates List */}
@@ -474,9 +475,9 @@ const handleAddLiveUpdate = async () => {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
-                        >
+>
                           <div className="flex items-start justify-between">
-<div className="flex-1">
+                            <div className="flex-1">
                               <div className="flex items-center space-x-2 mb-2">
                                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                                 <Badge variant="live" className="text-xs">
