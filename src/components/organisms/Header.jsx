@@ -87,8 +87,7 @@ const Header = () => {
               </Link>
             </div>
           </div>
-
-          {/* Desktop Actions */}
+{/* Desktop Actions */}
           <div className="hidden lg:flex items-center space-x-4">
             <SearchBar 
               onSearch={handleSearch}
@@ -96,13 +95,12 @@ const Header = () => {
               placeholder="Search breaking news..."
             />
             <Link to="/admin">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="bg-gradient-to-r from-primary/10 to-orange-500/10 border-primary/30 text-primary hover:bg-primary hover:text-white transition-all duration-300">
                 <ApperIcon name="Settings" size={16} className="mr-2" />
-                Admin
+                Admin Panel
               </Button>
             </Link>
           </div>
-
           {/* Mobile Actions */}
           <div className="flex lg:hidden items-center space-x-2">
             <Button
@@ -167,15 +165,14 @@ const Header = () => {
                     <span>LIVE COVERAGE</span>
                   </Link>
                 </div>
-
-                <div className="pt-4 border-t border-gray-200">
+<div className="pt-4 border-t border-gray-200">
                   <Link
                     to="/admin"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 text-secondary hover:bg-primary/10 rounded-lg transition-colors"
+                    className="flex items-center space-x-3 px-4 py-3 text-secondary hover:bg-gradient-to-r hover:from-primary/10 hover:to-orange-500/10 rounded-lg transition-all duration-300 group"
                   >
-                    <ApperIcon name="Settings" size={18} />
-                    <span>Admin Panel</span>
+                    <ApperIcon name="Settings" size={18} className="group-hover:text-primary transition-colors" />
+                    <span className="group-hover:text-primary transition-colors font-medium">Admin Panel</span>
                   </Link>
                 </div>
               </div>

@@ -1,351 +1,523 @@
 import React, { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
+import { toast } from "react-toastify"
 import ApperIcon from "@/components/ApperIcon"
 import Button from "@/components/atoms/Button"
 import Input from "@/components/atoms/Input"
 import Card from "@/components/atoms/Card"
+import Badge from "@/components/atoms/Badge"
 import Loading from "@/components/ui/Loading"
 import Error from "@/components/ui/Error"
-import { toast } from "react-toastify"
 import articleService from "@/services/api/articleService"
+import liveUpdateService from "@/services/api/liveUpdateService"
 import categoryService from "@/services/api/categoryService"
 
 const ArticleEditor = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const isEditing = Boolean(id)
-  
-  const [formData, setFormData] = useState({
+
+  const [article, setArticle] = useState({
     title: "",
     summary: "",
     content: "",
+    category: "world",
+    author: "NewsHub Pro",
     imageUrl: "",
-    category: "",
-    author: "",
+    tags: [],
+    featured: false,
     isLive: false
   })
   
+  const [liveUpdates, setLiveUpdates] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(false)
-  const [initialLoading, setInitialLoading] = useState(isEditing)
-  const [error, setError] = useState("")
-  const [previewMode, setPreviewMode] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+  const [newUpdate, setNewUpdate] = useState("")
+  const [tagInput, setTagInput] = useState("")
 
-  const loadData = async () => {
-    try {
-      setInitialLoading(true)
-      setError("")
-      
-      const [categoriesData, articleData] = await Promise.all([
-        categoryService.getAll(),
-        isEditing ? articleService.getById(id) : Promise.resolve(null)
-      ])
-      
-      setCategories(categoriesData)
-      
-      if (articleData) {
-        setFormData({
-          title: articleData.title,
-          summary: articleData.summary,
-          content: articleData.content,
-          imageUrl: articleData.imageUrl,
-          category: articleData.category,
-          author: articleData.author,
-          isLive: articleData.isLive
-        })
-      }
-      
-    } catch (err) {
-      setError(err.message || "Failed to load data")
-    } finally {
-      setInitialLoading(false)
-    }
-  }
+  useEffect(() => {
+    loadInitialData()
+  }, [id])
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (!formData.title.trim() || !formData.summary.trim() || !formData.content.trim()) {
-      toast.error("Please fill in all required fields")
-      return
-    }
-    
+  const loadInitialData = async () => {
     try {
       setLoading(true)
-      
+      setError(null)
+
+      const [categoriesData] = await Promise.all([
+        categoryService.getAll()
+      ])
+
+      setCategories(categoriesData)
+
       if (isEditing) {
-        await articleService.update(id, formData)
-        toast.success("Article updated successfully")
-      } else {
-        const newArticle = await articleService.create(formData)
-        toast.success("Article created successfully")
-        navigate(`/admin/article/${newArticle.Id}`)
-        return
+        const [articleData, updatesData] = await Promise.all([
+          articleService.getById(id),
+          liveUpdateService.getByArticleId(id)
+        ])
+        
+        setArticle(articleData)
+        setLiveUpdates(updatesData)
       }
-      
+
     } catch (err) {
-      toast.error(err.message || "Failed to save article")
+      setError(err.message || "Failed to load data")
+      toast.error("Failed to load article data")
     } finally {
       setLoading(false)
     }
   }
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+  const handleSave = async () => {
+    if (!article.title.trim()) {
+      toast.error("Article title is required")
+      return
+    }
+
+    if (!article.content.trim()) {
+      toast.error("Article content is required")
+      return
+    }
+
+    try {
+      setSaving(true)
+
+      let savedArticle
+      if (isEditing) {
+        savedArticle = await articleService.update(id, article)
+        toast.success("Article updated successfully!")
+      } else {
+        savedArticle = await articleService.create(article)
+        toast.success("Article created successfully!")
+        navigate(`/admin/article/${savedArticle.Id}`)
+      }
+
+    } catch (err) {
+      toast.error(err.message || "Failed to save article")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleAddLiveUpdate = async () => {
+    if (!newUpdate.trim()) {
+      toast.error("Update content is required")
+      return
+    }
+
+    if (!isEditing) {
+      toast.error("Please save the article first before adding live updates")
+      return
+    }
+
+    try {
+      const update = await liveUpdateService.create({
+        articleId: id,
+        content: newUpdate.trim()
+      })
+
+      setLiveUpdates(prev => [update, ...prev])
+      setNewUpdate("")
+      toast.success("Live update added!")
+
+    } catch (err) {
+      toast.error(err.message || "Failed to add live update")
+    }
+  }
+
+  const handleDeleteLiveUpdate = async (updateId) => {
+    try {
+      await liveUpdateService.delete(updateId)
+      setLiveUpdates(prev => prev.filter(update => update.Id !== updateId))
+      toast.success("Live update deleted!")
+    } catch (err) {
+      toast.error(err.message || "Failed to delete live update")
+    }
+  }
+
+  const handleAddTag = () => {
+    if (!tagInput.trim()) return
+    
+    const newTag = tagInput.trim().toLowerCase()
+    if (!article.tags.includes(newTag)) {
+      setArticle(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag]
+      }))
+    }
+    setTagInput("")
+  }
+
+  const handleRemoveTag = (tagToRemove) => {
+    setArticle(prev => ({
       ...prev,
-      [field]: value
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
     }))
   }
 
-  const handleCancel = () => {
-    if (!confirm("Are you sure you want to cancel? Any unsaved changes will be lost.")) {
-      return
-    }
-    navigate("/admin")
-  }
-
-  useEffect(() => {
-    loadData()
-  }, [id])
-
-  if (initialLoading) return <Loading />
-  if (error) return <Error message={error} onRetry={loadData} />
+  if (loading) return <Loading />
+  if (error) return <Error message={error} onRetry={loadInitialData} />
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="flex items-center justify-between mb-8"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-display font-bold text-secondary">
-                {isEditing ? "Edit Article" : "Create New Article"}
-              </h1>
-              <p className="text-gray-600 mt-1">
-                {isEditing ? "Update your article content" : "Write and publish a new article"}
-              </p>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="ghost"
-                onClick={() => setPreviewMode(!previewMode)}
-              >
-                <ApperIcon name={previewMode ? "Edit" : "Eye"} size={16} className="mr-2" />
-                {previewMode ? "Edit" : "Preview"}
-              </Button>
-              <Button variant="outline" onClick={handleCancel}>
-                Cancel
-              </Button>
-            </div>
+          <div>
+            <h1 className="text-3xl font-display font-bold text-secondary">
+              {isEditing ? "Edit Article" : "Create New Article"}
+            </h1>
+            <p className="text-gray-600 mt-2">
+              {isEditing ? `Editing article #${id}` : "Create and publish a new article"}
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/admin")}
+            >
+              <ApperIcon name="ArrowLeft" size={16} className="mr-2" />
+              Back to Dashboard
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving ? (
+                <>
+                  <ApperIcon name="Loader2" size={16} className="mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <ApperIcon name="Save" size={16} className="mr-2" />
+                  {isEditing ? "Update Article" : "Create Article"}
+                </>
+              )}
+            </Button>
           </div>
         </motion.div>
 
-        {!previewMode ? (
-          /* Edit Mode */
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card>
-              <Card.Content className="p-8">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Input
-                      label="Article Title *"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange("title", e.target.value)}
-                      placeholder="Enter article title"
-                      className="md:col-span-2"
-                    />
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-secondary mb-2">
-                        Category *
-                      </label>
-                      <select
-                        value={formData.category}
-                        onChange={(e) => handleInputChange("category", e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-white text-secondary focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                        required
-                      >
-                        <option value="">Select category</option>
-                        {categories.map((category) => (
-                          <option key={category.Id} value={category.name}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    <Input
-                      label="Author *"
-                      value={formData.author}
-                      onChange={(e) => handleInputChange("author", e.target.value)}
-                      placeholder="Enter author name"
-                    />
-                    
-                    <Input
-                      label="Featured Image URL *"
-                      value={formData.imageUrl}
-                      onChange={(e) => handleInputChange("imageUrl", e.target.value)}
-                      placeholder="https://example.com/image.jpg"
-                      className="md:col-span-2"
-                    />
-                    
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-secondary mb-2">
-                        Article Summary *
-                      </label>
-                      <textarea
-                        value={formData.summary}
-                        onChange={(e) => handleInputChange("summary", e.target.value)}
-                        placeholder="Write a brief summary of the article"
-                        rows="3"
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-white text-secondary placeholder-gray-500 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 resize-none"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-secondary mb-2">
-                        Article Content *
-                      </label>
-                      <textarea
-                        value={formData.content}
-                        onChange={(e) => handleInputChange("content", e.target.value)}
-                        placeholder="Write your article content here..."
-                        rows="12"
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-white text-secondary placeholder-gray-500 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 resize-none"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="md:col-span-2">
-                      <label className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          checked={formData.isLive}
-                          onChange={(e) => handleInputChange("isLive", e.target.checked)}
-                          className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary focus:ring-2"
-                        />
-                        <div>
-                          <span className="text-sm font-medium text-secondary">
-                            Mark as Live Article
-                          </span>
-                          <p className="text-xs text-gray-500">
-                            Live articles appear with a live indicator and receive real-time updates
-                          </p>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleCancel}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      loading={loading}
-                    >
-                      <ApperIcon name="Save" size={16} className="mr-2" />
-                      {isEditing ? "Update Article" : "Publish Article"}
-                    </Button>
-                  </div>
-                </form>
-              </Card.Content>
-            </Card>
-          </motion.div>
-        ) : (
-          /* Preview Mode */
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="space-y-8"
-          >
-            <Card>
-              <Card.Content className="p-0">
-                {/* Preview Header */}
-                <div className="bg-gradient-to-r from-primary/5 to-orange-600/5 px-8 py-4 border-b border-gray-200">
-                  <div className="flex items-center space-x-3">
-                    <ApperIcon name="Eye" size={20} className="text-primary" />
-                    <span className="font-medium text-secondary">Article Preview</span>
-                  </div>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Article Details */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="p-6">
+                <h2 className="text-xl font-display font-bold text-secondary mb-6">
+                  Article Details
+                </h2>
                 
-                {/* Preview Content */}
-                <div className="p-8">
-                  {formData.imageUrl && (
-                    <div className="mb-8 rounded-2xl overflow-hidden shadow-lg">
-                      <img
-                        src={formData.imageUrl}
-                        alt={formData.title}
-                        className="w-full h-64 object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none'
-                        }}
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="space-y-6">
-                    <div className="flex items-center space-x-3">
-                      {formData.category && (
-                        <span className="px-3 py-1 bg-gradient-to-r from-primary to-orange-600 text-white text-sm font-medium rounded-full">
-                          {formData.category}
-                        </span>
-                      )}
-                      {formData.isLive && (
-                        <span className="px-3 py-1 bg-gradient-to-r from-error to-red-600 text-white text-sm font-medium rounded-full animate-pulse">
-                          <span className="w-2 h-2 bg-white rounded-full inline-block mr-1.5 animate-pulse"></span>
-                          LIVE
-                        </span>
-                      )}
-                    </div>
-                    
-                    <h1 className="text-3xl lg:text-4xl font-display font-bold text-secondary leading-tight">
-                      {formData.title || "Article Title"}
-                    </h1>
-                    
-                    <p className="text-xl text-gray-600 leading-relaxed">
-                      {formData.summary || "Article summary will appear here..."}
+                <div className="space-y-6">
+                  {/* Title */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Article Title *
+                    </label>
+                    <Input
+                      value={article.title}
+                      onChange={(e) => setArticle(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="Enter article title..."
+                      className="text-lg font-medium"
+                    />
+                  </div>
+
+                  {/* Summary */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Summary *
+                    </label>
+                    <textarea
+                      value={article.summary}
+                      onChange={(e) => setArticle(prev => ({ ...prev, summary: e.target.value }))}
+                      placeholder="Enter article summary..."
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+                    />
+                  </div>
+
+                  {/* Content */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Article Content *
+                    </label>
+                    <textarea
+                      value={article.content}
+                      onChange={(e) => setArticle(prev => ({ ...prev, content: e.target.value }))}
+                      placeholder="Write your article content here..."
+                      rows={15}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary resize-none font-mono text-sm"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {article.content.length} characters
                     </p>
-                    
-                    <div className="flex items-center space-x-4 text-sm text-gray-500 border-b border-gray-200 pb-6">
-                      <div className="flex items-center space-x-2">
-                        <ApperIcon name="User" size={16} />
-                        <span>By {formData.author || "Author Name"}</span>
+                  </div>
+
+                  {/* Image URL */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Featured Image URL
+                    </label>
+                    <Input
+                      value={article.imageUrl}
+                      onChange={(e) => setArticle(prev => ({ ...prev, imageUrl: e.target.value }))}
+                      placeholder="https://example.com/image.jpg"
+                    />
+                    {article.imageUrl && (
+                      <div className="mt-3">
+                        <img
+                          src={article.imageUrl}
+                          alt="Preview"
+                          className="w-full max-w-md h-48 object-cover rounded-lg"
+                          onError={(e) => {
+                            e.target.style.display = 'none'
+                          }}
+                        />
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <ApperIcon name="Calendar" size={16} />
-                        <span>{new Date().toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="prose prose-lg max-w-none">
-                      <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                        {formData.content || "Article content will appear here..."}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
-              </Card.Content>
-            </Card>
-          </motion.div>
-        )}
+              </Card>
+            </motion.div>
+
+            {/* Live Updates */}
+            {isEditing && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-display font-bold text-secondary">
+                      Live Updates
+                    </h2>
+                    {article.isLive && (
+                      <Badge variant="live" className="animate-pulse">
+                        <div className="w-2 h-2 bg-white rounded-full mr-1.5 animate-pulse" />
+                        LIVE
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Add New Update */}
+                  <div className="mb-6">
+                    <div className="flex space-x-3">
+                      <textarea
+                        value={newUpdate}
+                        onChange={(e) => setNewUpdate(e.target.value)}
+                        placeholder="Add a live update..."
+                        rows={2}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+                      />
+                      <Button
+                        variant="primary"
+                        onClick={handleAddLiveUpdate}
+                        disabled={!newUpdate.trim()}
+                      >
+                        <ApperIcon name="Plus" size={16} className="mr-2" />
+                        Add Update
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Updates List */}
+                  <div className="space-y-4">
+                    {liveUpdates.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <ApperIcon name="MessageSquare" size={48} className="mx-auto mb-4 text-gray-300" />
+                        <p>No live updates yet</p>
+                        <p className="text-sm">Add your first live update above</p>
+                      </div>
+                    ) : (
+                      liveUpdates.map((update) => (
+                        <motion.div
+                          key={update.Id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                                <Badge variant="live" className="text-xs">
+                                  LIVE UPDATE
+                                </Badge>
+                                <span className="text-xs text-gray-500">
+                                  {new Date(update.timestamp).toLocaleString()}
+                                </span>
+                              </div>
+                              <p className="text-sm text-secondary">
+                                {update.content}
+                              </p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteLiveUpdate(update.Id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-4"
+                            >
+                              <ApperIcon name="Trash2" size={16} />
+                            </Button>
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Publishing Options */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card className="p-6">
+                <h3 className="text-lg font-display font-bold text-secondary mb-4">
+                  Publishing Options
+                </h3>
+                
+                <div className="space-y-4">
+                  {/* Category */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Category
+                    </label>
+                    <select
+                      value={article.category}
+                      onChange={(e) => setArticle(prev => ({ ...prev, category: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
+                    >
+                      {categories.map((category) => (
+                        <option key={category.Id} value={category.slug}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Author */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Author
+                    </label>
+                    <Input
+                      value={article.author}
+                      onChange={(e) => setArticle(prev => ({ ...prev, author: e.target.value }))}
+                      placeholder="Author name"
+                    />
+                  </div>
+
+                  {/* Featured */}
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="featured"
+                      checked={article.featured}
+                      onChange={(e) => setArticle(prev => ({ ...prev, featured: e.target.checked }))}
+                      className="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded"
+                    />
+                    <label htmlFor="featured" className="text-sm font-medium text-gray-700">
+                      Featured Article
+                    </label>
+                  </div>
+
+                  {/* Live Coverage */}
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="isLive"
+                      checked={article.isLive}
+                      onChange={(e) => setArticle(prev => ({ ...prev, isLive: e.target.checked }))}
+                      className="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded"
+                    />
+                    <label htmlFor="isLive" className="text-sm font-medium text-gray-700">
+                      Live Coverage
+                    </label>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Tags */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card className="p-6">
+                <h3 className="text-lg font-display font-bold text-secondary mb-4">
+                  Tags
+                </h3>
+                
+                <div className="space-y-4">
+                  {/* Add Tag */}
+                  <div className="flex space-x-2">
+                    <Input
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      placeholder="Add tag..."
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleAddTag()
+                        }
+                      }}
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddTag}
+                      disabled={!tagInput.trim()}
+                    >
+                      <ApperIcon name="Plus" size={16} />
+                    </Button>
+                  </div>
+
+                  {/* Tags List */}
+                  <div className="flex flex-wrap gap-2">
+                    {article.tags.map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        className="cursor-pointer hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-colors"
+                        onClick={() => handleRemoveTag(tag)}
+                      >
+                        {tag}
+                        <ApperIcon name="X" size={14} className="ml-1" />
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {article.tags.length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No tags added yet
+                    </p>
+                  )}
+                </div>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
       </div>
     </div>
   )

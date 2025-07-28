@@ -1,37 +1,62 @@
 [
   {
     "Id": 1,
-    "name": "Admin User",
+    "username": "admin",
     "email": "admin@newshub.com",
+    "firstName": "Admin",
+    "lastName": "User",
     "role": "admin",
-    "permissions": ["create", "edit", "delete", "publish", "manage_users"]
+    "isActive": true,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "lastLogin": "2025-01-28T10:30:00Z",
+    "permissions": ["all"]
   },
   {
     "Id": 2,
-    "name": "Sarah Chen",
-    "email": "sarah.chen@newshub.com",
+    "username": "editor",
+    "email": "editor@newshub.com", 
+    "firstName": "Sarah",
+    "lastName": "Johnson",
     "role": "editor",
-    "permissions": ["create", "edit", "publish"]
+    "isActive": true,
+    "createdAt": "2024-02-15T00:00:00Z",
+    "lastLogin": "2025-01-28T09:15:00Z",
+    "permissions": ["create_articles", "edit_articles", "publish_articles", "manage_categories"]
   },
   {
     "Id": 3,
-    "name": "Marcus Rodriguez",
-    "email": "marcus.rodriguez@newshub.com",
+    "username": "reporter1",
+    "email": "ahmed@newshub.com",
+    "firstName": "Ahmed",
+    "lastName": "Hassan", 
     "role": "reporter",
-    "permissions": ["create", "edit"]
+    "isActive": true,
+    "createdAt": "2024-03-10T00:00:00Z",
+    "lastLogin": "2025-01-28T08:45:00Z",
+    "permissions": ["create_articles", "edit_own_articles"]
   },
   {
     "Id": 4,
-    "name": "Elena Volkov",
-    "email": "elena.volkov@newshub.com",
-    "role": "reporter",
-    "permissions": ["create", "edit"]
+    "username": "reporter2",
+    "email": "maria@newshub.com",
+    "firstName": "Maria",
+    "lastName": "Rodriguez",
+    "role": "reporter", 
+    "isActive": true,
+    "createdAt": "2024-04-05T00:00:00Z",
+    "lastLogin": "2025-01-28T07:20:00Z",
+    "permissions": ["create_articles", "edit_own_articles"]
   },
   {
     "Id": 5,
-    "name": "Tony Mitchell",
-    "email": "tony.mitchell@newshub.com",
-    "role": "reporter",
-    "permissions": ["create", "edit"]
+    "username": "viewer",
+    "email": "viewer@newshub.com",
+    "firstName": "John",
+    "lastName": "Viewer",
+    "role": "viewer",
+    "isActive": true,
+    "createdAt": "2024-05-20T00:00:00Z", 
+    "lastLogin": "2025-01-28T06:00:00Z",
+    "permissions": ["view_articles"]
   }
 ]

@@ -2,37 +2,61 @@
   {
     "Id": 1,
     "articleId": "1",
-    "content": "EU delegates announce additional commitment to phase out coal power by 2030, exceeding previous targets set in the agreement.",
-    "timestamp": "2024-01-15T11:45:00Z"
+    "content": "Breaking: UN Secretary-General calls for immediate ceasefire to allow expanded humanitarian access",
+    "timestamp": "2025-01-28T12:08:00Z"
   },
   {
     "Id": 2,
-    "articleId": "1",
-    "content": "China confirms participation in new international carbon trading system, marking significant shift in environmental policy.",
-    "timestamp": "2024-01-15T11:20:00Z"
+    "articleId": "1", 
+    "content": "Update: Second aid convoy of 15 trucks cleared to enter Gaza through Rafah crossing",
+    "timestamp": "2025-01-28T12:03:00Z"
   },
   {
     "Id": 3,
     "articleId": "1",
-    "content": "Youth climate activists gather outside summit venue, demanding stronger enforcement mechanisms for emission targets.",
-    "timestamp": "2024-01-15T10:55:00Z"
+    "content": "Live: Israeli officials confirm coordination with international bodies for aid delivery",
+    "timestamp": "2025-01-28T11:58:00Z"
   },
   {
     "Id": 4,
-    "articleId": "4",
-    "content": "Phoenix Eagles' victory parade scheduled for tomorrow at 2 PM, expected to draw over 100,000 fans to downtown area.",
-    "timestamp": "2024-01-15T02:15:00Z"
+    "articleId": "8",
+    "content": "Health Alert: Malaysia reports first suspected case, patient isolated and tested",
+    "timestamp": "2025-01-28T11:45:00Z"
   },
   {
     "Id": 5,
-    "articleId": "4",
-    "content": "Championship MVP Jake Morrison announces $1 million donation to youth sports programs in Phoenix.",
-    "timestamp": "2024-01-15T01:30:00Z"
+    "articleId": "8",
+    "content": "WHO Update: Emergency team arrives in Bangkok to coordinate regional response",
+    "timestamp": "2025-01-28T11:30:00Z"
   },
   {
     "Id": 6,
+    "articleId": "1",
+    "content": "Developing: Egyptian authorities facilitate aid inspection at Rafah border crossing",
+    "timestamp": "2025-01-28T11:25:00Z"
+  },
+  {
+    "Id": 7,
+    "articleId": "4",
+    "content": "Market Update: Tech sector up 4.1% in after-hours trading following earnings beats",
+    "timestamp": "2025-01-28T11:20:00Z"
+  },
+  {
+    "Id": 8,
+    "articleId": "5",
+    "content": "Champions League: City's Haaland becomes youngest player to score 40+ UCL goals",
+    "timestamp": "2025-01-28T11:15:00Z"
+  },
+  {
+    "Id": 9,
     "articleId": "2",
-    "content": "ScienceAI successfully identifies potential treatment pathway for rare neurological disorder in latest demonstration.",
-    "timestamp": "2024-01-15T09:40:00Z"
+    "content": "Gaza Update: Rescue operations continue at collapsed residential building site",
+    "timestamp": "2025-01-28T11:10:00Z"
+  },
+  {
+    "Id": 10,
+    "articleId": "8",
+    "content": "Health Alert: Laboratory results expected within 48 hours to identify pathogen",
+    "timestamp": "2025-01-28T11:05:00Z"
   }
 ]

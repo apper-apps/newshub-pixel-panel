@@ -125,7 +125,7 @@ const ArticleCard = ({ article, featured = false, showCategory = true }) => {
             </div>
           </div>
         </Link>
-      </motion.div>
+</motion.div>
     )
   }
 

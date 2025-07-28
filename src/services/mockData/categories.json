@@ -3,60 +3,100 @@
     "Id": 1,
     "name": "Breaking News",
     "slug": "breaking",
-    "order": 1
+    "description": "Latest breaking news and urgent updates",
+    "color": "#DC3545",
+    "icon": "AlertTriangle",
+    "isActive": true,
+    "sortOrder": 1
   },
   {
     "Id": 2,
     "name": "World",
     "slug": "world",
-    "order": 2
+    "description": "International news and global events",
+    "color": "#007BFF",
+    "icon": "Globe",
+    "isActive": true,
+    "sortOrder": 2
   },
   {
     "Id": 3,
     "name": "Politics",
     "slug": "politics",
-    "order": 3
+    "description": "Political news and government affairs",
+    "color": "#6F42C1",
+    "icon": "Building",
+    "isActive": true,
+    "sortOrder": 3
   },
   {
     "Id": 4,
     "name": "Business",
     "slug": "business",
-    "order": 4
+    "description": "Business news, markets, and economy",
+    "color": "#28A745",
+    "icon": "TrendingUp",
+    "isActive": true,
+    "sortOrder": 4
   },
   {
     "Id": 5,
     "name": "Technology",
     "slug": "technology",
-    "order": 5
+    "description": "Tech news, innovations, and digital trends",
+    "color": "#17A2B8",
+    "icon": "Smartphone",
+    "isActive": true,
+    "sortOrder": 5
   },
   {
     "Id": 6,
-    "name": "Science",
-    "slug": "science",
-    "order": 6
+    "name": "Sport",
+    "slug": "sport",
+    "description": "Sports news, scores, and analysis",
+    "color": "#FD7E14",
+    "icon": "Trophy",
+    "isActive": true,
+    "sortOrder": 6
   },
   {
     "Id": 7,
     "name": "Health",
     "slug": "health",
-    "order": 7
+    "description": "Health news, medical breakthroughs, and wellness",
+    "color": "#20C997",
+    "icon": "Heart",
+    "isActive": true,
+    "sortOrder": 7
   },
   {
     "Id": 8,
-    "name": "Sports",
-    "slug": "sports",
-    "order": 8
+    "name": "Opinion",
+    "slug": "opinion",
+    "description": "Editorial content and opinion pieces",
+    "color": "#6C757D",
+    "icon": "MessageSquare",
+    "isActive": true,
+    "sortOrder": 8
   },
   {
     "Id": 9,
     "name": "Culture",
     "slug": "culture",
-    "order": 9
+    "description": "Arts, culture, and entertainment news",
+    "color": "#E83E8C",
+    "icon": "Palette",
+    "isActive": true,
+    "sortOrder": 9
   },
   {
     "Id": 10,
-    "name": "Opinion",
-    "slug": "opinion",
-    "order": 10
+    "name": "Environment",
+    "slug": "environment",
+    "description": "Climate change, sustainability, and environmental news",
+    "color": "#198754",
+    "icon": "Leaf",
+    "isActive": true,
+    "sortOrder": 10
   }
 ]
