@@ -16,7 +16,7 @@ import Button from "@/components/atoms/Button";
 import Card from "@/components/atoms/Card";
 
 const HomePage = () => {
-const [articles, setArticles] = useState([])
+  const [articles, setArticles] = useState([])
   const [featuredArticle, setFeaturedArticle] = useState(null)
   const [mostPopular, setMostPopular] = useState([])
   const [liveUpdates, setLiveUpdates] = useState([])
@@ -51,13 +51,24 @@ const [allArticles, featured, popular, updates, breakingArticles] = await Promis
   useEffect(() => {
     loadData()
     
-    // Simulate live updates every 5 minutes
-    const interval = setInterval(() => {
-      liveUpdateService.getRecent(6).then(setLiveUpdates).catch(console.error)
-    }, 300000)
+// Real-time live updates refresh every 5 minutes (300000ms)
+const interval = setInterval(async () => {
+      try {
+        const [updatedArticles, freshUpdates] = await Promise.all([
+          articleService.getAll(),
+          liveUpdateService.getRecent(6)
+        ])
+        
+        // Update articles to reflect any live changes
+        setArticles(updatedArticles)
+        setLiveUpdates(freshUpdates)
+      } catch (err) {
+        console.error('Failed to refresh live content:', err)
+      }
+    }, 300000) // 5 minutes as requested
     
     return () => clearInterval(interval)
-}, [])
+  }, [])
 
   // Transform articles into category groups with metadata
   const categoryGroups = React.useMemo(() => {

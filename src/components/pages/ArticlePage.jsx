@@ -15,11 +15,13 @@ import liveUpdateService from "@/services/api/liveUpdateService"
 
 const ArticlePage = () => {
   const { id } = useParams()
-  const [article, setArticle] = useState(null)
+const [article, setArticle] = useState(null)
   const [liveUpdates, setLiveUpdates] = useState([])
   const [relatedArticles, setRelatedArticles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [showLiveTab, setShowLiveTab] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
   const loadData = async () => {
     try {
@@ -73,6 +75,29 @@ const ArticlePage = () => {
   if (error) return <Error message={error} onRetry={loadData} />
   if (!article) return <Error title="Article not found" message="The article you're looking for doesn't exist." showRetry={false} />
 
+// Auto-refresh live updates every 5 minutes for live articles
+  useEffect(() => {
+    if (article?.isLive) {
+      const interval = setInterval(async () => {
+        try {
+          setRefreshing(true)
+          const updates = await liveUpdateService.getByArticleId(id)
+          setLiveUpdates(updates)
+        } catch (err) {
+          console.error('Failed to refresh live updates:', err)
+        } finally {
+          setRefreshing(false)
+        }
+      }, 300000) // 5 minutes
+
+      return () => clearInterval(interval)
+    }
+  }, [article?.isLive, id])
+
+  if (loading) return <Loading />
+  if (error) return <Error message={error} onRetry={loadData} />
+  if (!article) return <Error message="Article not found" />
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -102,11 +127,28 @@ const ArticlePage = () => {
               <header className="space-y-6">
                 <div className="flex items-center space-x-4">
                   <Badge variant="category">{article.category}</Badge>
-                  {article.isLive && (
-                    <Badge variant="live" className="animate-pulse">
-                      <div className="w-2 h-2 bg-white rounded-full mr-1.5 animate-pulse" />
-                      LIVE
-                    </Badge>
+{article.isLive && (
+                    <div className="flex items-center space-x-3">
+                      <Badge variant="live" className="animate-pulse">
+                        <div className="w-2 h-2 bg-white rounded-full mr-1.5 animate-pulse" />
+                        LIVE
+                      </Badge>
+                      <Button
+                        variant={showLiveTab ? "primary" : "outline"}
+                        size="sm"
+                        onClick={() => setShowLiveTab(!showLiveTab)}
+                        className="text-sm"
+                      >
+                        <ApperIcon name={showLiveTab ? "Eye" : "Radio"} size={16} className="mr-2" />
+                        {showLiveTab ? "Hide Live Feed" : "View Live Feed"}
+                      </Button>
+                      {refreshing && (
+                        <div className="flex items-center text-xs text-gray-500">
+                          <ApperIcon name="RefreshCw" size={14} className="mr-1 animate-spin" />
+                          Refreshing...
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 
@@ -147,6 +189,46 @@ const ArticlePage = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
               </div>
+
+{/* Live Updates Toggle View */}
+              {article.isLive && showLiveTab && liveUpdates.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-8"
+                >
+                  <Card className="border-l-4 border-l-primary">
+                    <Card.Header className="bg-gradient-to-r from-primary/10 to-orange-600/10">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse" />
+                          <h3 className="text-xl font-display font-bold text-secondary">Live Updates</h3>
+                          <Badge variant="live" className="animate-pulse">
+                            {liveUpdates.length} Updates
+                          </Badge>
+                        </div>
+                        <span className="text-sm text-gray-600">
+                          Auto-refreshes every 5 minutes
+                        </span>
+                      </div>
+                    </Card.Header>
+                    
+                    <Card.Content className="space-y-6 max-h-96 overflow-y-auto">
+                      {liveUpdates.map((update, index) => (
+                        <motion.div
+                          key={update.Id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <LiveUpdate update={update} isNew={index === 0} />
+                        </motion.div>
+                      ))}
+                    </Card.Content>
+                  </Card>
+                </motion.div>
+              )}
 
               {/* Article Content */}
               <div className="prose prose-lg max-w-none">
@@ -204,26 +286,50 @@ const ArticlePage = () => {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-8">
-            {/* Live Updates for this article */}
-            {article.isLive && liveUpdates.length > 0 && (
+<div className="space-y-8">
+            {/* Live Updates Sidebar - Always visible for live articles */}
+            {article.isLive && liveUpdates.length > 0 && !showLiveTab && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
+                className="sticky top-6"
               >
-                <Card>
-                  <Card.Header>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-error rounded-full animate-pulse" />
-                      <h3 className="text-lg font-display font-bold text-secondary">Live Updates</h3>
+                <Card className="border-l-4 border-l-primary shadow-lg">
+                  <Card.Header className="bg-gradient-to-r from-primary/10 to-orange-600/10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse" />
+                        <h3 className="text-lg font-display font-bold text-secondary">Latest Updates</h3>
+                      </div>
+                      <Badge variant="live" className="animate-pulse text-xs">
+                        {liveUpdates.length}
+                      </Badge>
                     </div>
                   </Card.Header>
                   
-                  <Card.Content className="space-y-4 max-h-96 overflow-y-auto">
-                    {liveUpdates.map((update) => (
-                      <LiveUpdate key={update.Id} update={update} />
+                  <Card.Content className="space-y-4 max-h-80 overflow-y-auto">
+                    {liveUpdates.slice(0, 3).map((update, index) => (
+                      <motion.div
+                        key={update.Id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <LiveUpdate update={update} />
+                      </motion.div>
                     ))}
+                    {liveUpdates.length > 3 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowLiveTab(true)}
+                        className="w-full mt-4"
+                      >
+                        View All {liveUpdates.length} Updates
+                        <ApperIcon name="ArrowRight" size={16} className="ml-2" />
+                      </Button>
+                    )}
                   </Card.Content>
                 </Card>
               </motion.div>

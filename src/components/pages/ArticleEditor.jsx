@@ -35,7 +35,9 @@ const ArticleEditor = () => {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
-  const [newUpdate, setNewUpdate] = useState("")
+const [newUpdate, setNewUpdate] = useState("")
+  const [newUpdateHeading, setNewUpdateHeading] = useState("")
+  const [newUpdateSocialLink, setNewUpdateSocialLink] = useState("")
   const [tagInput, setTagInput] = useState("")
 
   useEffect(() => {
@@ -114,9 +116,11 @@ const ArticleEditor = () => {
     }
 
     try {
-      const update = await liveUpdateService.create({
+const update = await liveUpdateService.create({
         articleId: id,
-        content: newUpdate.trim()
+        heading: newUpdateHeading.trim() || "Breaking Update",
+        content: newUpdate.trim(),
+        socialLink: newUpdateSocialLink.trim() || null
       })
 
       setLiveUpdates(prev => [update, ...prev])
@@ -314,22 +318,51 @@ const ArticleEditor = () => {
 
                   {/* Add New Update */}
                   <div className="mb-6">
-                    <div className="flex space-x-3">
-                      <textarea
-                        value={newUpdate}
-                        onChange={(e) => setNewUpdate(e.target.value)}
-                        placeholder="Add a live update..."
-                        rows={2}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary resize-none"
-                      />
-                      <Button
-                        variant="primary"
-                        onClick={handleAddLiveUpdate}
-                        disabled={!newUpdate.trim()}
-                      >
-                        <ApperIcon name="Plus" size={16} className="mr-2" />
-                        Add Update
-                      </Button>
+<div className="space-y-4 p-4 bg-gradient-to-r from-primary/5 to-orange-600/5 rounded-lg border border-primary/20">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse" />
+                        <h4 className="font-semibold text-secondary">Add Live Update</h4>
+                        <Badge variant="live" className="text-xs">NEW</Badge>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <Input
+                          value={newUpdateHeading}
+                          onChange={(e) => setNewUpdateHeading(e.target.value)}
+                          placeholder="Update heading (e.g., 'Breaking News', 'Latest Development')"
+                          className="w-full"
+                        />
+                        
+                        <textarea
+                          value={newUpdate}
+                          onChange={(e) => setNewUpdate(e.target.value)}
+                          placeholder="Write your live update content here..."
+                          rows={3}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+                        />
+                        
+                        <Input
+                          value={newUpdateSocialLink}
+                          onChange={(e) => setNewUpdateSocialLink(e.target.value)}
+                          placeholder="Social media link (Twitter, Facebook, etc.) - Optional"
+                          className="w-full"
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">
+                          Timestamp will be automatically generated
+                        </span>
+<Button
+                          variant="primary"
+                          onClick={handleAddLiveUpdate}
+                          disabled={!newUpdate.trim()}
+                          className="px-6"
+                        >
+                          <ApperIcon name="Plus" size={16} className="mr-2" />
+                          Publish Live Update
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
@@ -350,19 +383,34 @@ const ArticleEditor = () => {
                           className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
                         >
                           <div className="flex items-start justify-between">
-                            <div className="flex-1">
+<div className="flex-1">
                               <div className="flex items-center space-x-2 mb-2">
                                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                                 <Badge variant="live" className="text-xs">
-                                  LIVE UPDATE
+                                  {update.heading || "LIVE UPDATE"}
                                 </Badge>
                                 <span className="text-xs text-gray-500">
                                   {new Date(update.timestamp).toLocaleString()}
                                 </span>
                               </div>
-                              <p className="text-sm text-secondary">
+                              <p className="text-sm text-secondary mb-2">
                                 {update.content}
                               </p>
+                              {update.socialLink && (
+                                <div className="mt-2 p-2 bg-gray-50 rounded border-l-2 border-blue-500">
+                                  <div className="flex items-center space-x-2">
+                                    <ApperIcon name="ExternalLink" size={14} className="text-blue-600" />
+                                    <a
+                                      href={update.socialLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs text-blue-600 hover:underline truncate"
+                                    >
+                                      {update.socialLink}
+                                    </a>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                             <Button
                               variant="ghost"

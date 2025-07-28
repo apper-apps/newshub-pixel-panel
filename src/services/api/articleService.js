@@ -98,11 +98,14 @@ class ArticleService {
       throw new Error("Article not found")
     }
     
-    this.articles[index] = {
+this.articles[index] = {
       ...this.articles[index],
       ...updates,
       updatedAt: new Date().toISOString()
     }
+    
+    // Trigger real-time sync by updating the articles array reference
+    this.articles = [...this.articles]
     
     return this.articles[index]
   }

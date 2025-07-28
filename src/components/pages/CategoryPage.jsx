@@ -45,7 +45,27 @@ const CategoryPage = () => {
     setCurrentPage(1)
   }, [category])
 
+// Auto-refresh for live articles every 5 minutes
+  useEffect(() => {
+    if (articles.some(article => article.isLive)) {
+      const interval = setInterval(async () => {
+        try {
+          const refreshedArticles = await articleService.getByCategory(category)
+          setArticles(refreshedArticles)
+        } catch (err) {
+          console.error('Failed to refresh live articles:', err)
+        }
+      }, 300000) // 5 minutes
+
+      return () => clearInterval(interval)
+    }
+  }, [articles, category])
+
   const sortedArticles = [...articles].sort((a, b) => {
+    // Prioritize live articles first
+    if (a.isLive && !b.isLive) return -1
+    if (!a.isLive && b.isLive) return 1
+    
     switch (sortBy) {
       case "newest":
         return new Date(b.publishedAt) - new Date(a.publishedAt)
@@ -57,7 +77,6 @@ const CategoryPage = () => {
         return 0
     }
   })
-
   const totalPages = Math.ceil(sortedArticles.length / articlesPerPage)
   const startIndex = (currentPage - 1) * articlesPerPage
   const currentArticles = sortedArticles.slice(startIndex, startIndex + articlesPerPage)

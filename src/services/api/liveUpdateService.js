@@ -33,14 +33,19 @@ class LiveUpdateService {
     return recentUpdates
   }
 
-  async create(updateData) {
+async create(updateData) {
     await new Promise(resolve => setTimeout(resolve, 300))
     
     const newId = Math.max(...this.liveUpdates.map(u => u.Id)) + 1
+    const currentTime = new Date()
+    
     const newUpdate = {
       Id: newId,
-      ...updateData,
-      timestamp: new Date().toISOString()
+      articleId: updateData.articleId.toString(),
+      heading: updateData.heading || "Live Update",
+      content: updateData.content,
+      socialLink: updateData.socialLink || null,
+      timestamp: currentTime.toISOString()
     }
     
     this.liveUpdates.unshift(newUpdate)
