@@ -1,145 +1,572 @@
-import articlesData from "@/services/mockData/articles.json"
+import { toast } from 'react-toastify'
 
 class ArticleService {
   constructor() {
-    this.articles = [...articlesData]
+    this.tableName = 'article'
+    this.apperClient = null
+    this.initializeClient()
+  }
+
+  initializeClient() {
+    if (typeof window !== 'undefined' && window.ApperSDK) {
+      const { ApperClient } = window.ApperSDK
+      this.apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+    }
   }
 
   async getAll() {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    
-    return [...this.articles].sort((a, b) => 
-      new Date(b.publishedAt) - new Date(a.publishedAt)
-    )
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "summary" } },
+          { field: { Name: "content" } },
+          { field: { Name: "category" } },
+          { field: { Name: "author" } },
+          { field: { Name: "publishedAt" } },
+          { field: { Name: "updatedAt" } },
+          { field: { Name: "imageUrl" } },
+          { field: { Name: "featured" } },
+          { field: { Name: "isLive" } },
+          { field: { Name: "viewCount" } },
+          { field: { Name: "status" } },
+          { field: { Name: "Tags" } }
+        ],
+        orderBy: [
+          { fieldName: "publishedAt", sorttype: "DESC" }
+        ]
+      }
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        toast.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching articles:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return []
+    }
   }
 
   async getById(id) {
-    await new Promise(resolve => setTimeout(resolve, 150))
-    
-    const article = this.articles.find(article => article.Id === parseInt(id))
-    if (!article) {
-      throw new Error("Article not found")
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "summary" } },
+          { field: { Name: "content" } },
+          { field: { Name: "category" } },
+          { field: { Name: "author" } },
+          { field: { Name: "publishedAt" } },
+          { field: { Name: "updatedAt" } },
+          { field: { Name: "imageUrl" } },
+          { field: { Name: "featured" } },
+          { field: { Name: "isLive" } },
+          { field: { Name: "viewCount" } },
+          { field: { Name: "status" } },
+          { field: { Name: "Tags" } }
+        ]
+      }
+      
+      const response = await this.apperClient.getRecordById(this.tableName, parseInt(id), params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        toast.error(response.message)
+        return null
+      }
+      
+      return response.data
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error(`Error fetching article with ID ${id}:`, error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return null
     }
-    
-    // Increment view count
-    article.viewCount = (article.viewCount || 0) + 1
-    return { ...article }
   }
 
   async getByCategory(category) {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    
-    const filtered = this.articles
-      .filter(article => 
-        article.category.toLowerCase() === category.toLowerCase()
-      )
-      .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-    
-    return filtered
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "summary" } },
+          { field: { Name: "content" } },
+          { field: { Name: "category" } },
+          { field: { Name: "author" } },
+          { field: { Name: "publishedAt" } },
+          { field: { Name: "updatedAt" } },
+          { field: { Name: "imageUrl" } },
+          { field: { Name: "featured" } },
+          { field: { Name: "isLive" } },
+          { field: { Name: "viewCount" } },
+          { field: { Name: "status" } },
+          { field: { Name: "Tags" } }
+        ],
+        where: [
+          {
+            FieldName: "category",
+            Operator: "EqualTo",
+            Values: [category]
+          }
+        ],
+        orderBy: [
+          { fieldName: "publishedAt", sorttype: "DESC" }
+        ]
+      }
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        toast.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching articles by category:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return []
+    }
   }
 
   async getFeatured() {
-    await new Promise(resolve => setTimeout(resolve, 150))
-    
-    const featured = this.articles.find(article => article.featured === true)
-    return featured || this.articles[0]
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "summary" } },
+          { field: { Name: "content" } },
+          { field: { Name: "category" } },
+          { field: { Name: "author" } },
+          { field: { Name: "publishedAt" } },
+          { field: { Name: "updatedAt" } },
+          { field: { Name: "imageUrl" } },
+          { field: { Name: "featured" } },
+          { field: { Name: "isLive" } },
+          { field: { Name: "viewCount" } },
+          { field: { Name: "status" } },
+          { field: { Name: "Tags" } }
+        ],
+        where: [
+          {
+            FieldName: "featured",
+            Operator: "EqualTo",
+            Values: [true]
+          }
+        ],
+        pagingInfo: { limit: 1 }
+      }
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return null
+      }
+      
+      return response.data?.[0] || null
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching featured article:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return null
+    }
   }
 
   async getMostPopular(limit = 5) {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    
-    const popular = [...this.articles]
-      .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-      .slice(0, limit)
-    
-    return popular
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "summary" } },
+          { field: { Name: "content" } },
+          { field: { Name: "category" } },
+          { field: { Name: "author" } },
+          { field: { Name: "publishedAt" } },
+          { field: { Name: "updatedAt" } },
+          { field: { Name: "imageUrl" } },
+          { field: { Name: "featured" } },
+          { field: { Name: "isLive" } },
+          { field: { Name: "viewCount" } },
+          { field: { Name: "status" } },
+          { field: { Name: "Tags" } }
+        ],
+        orderBy: [
+          { fieldName: "viewCount", sorttype: "DESC" }
+        ],
+        pagingInfo: { limit }
+      }
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching popular articles:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return []
+    }
   }
 
   async getLiveArticles() {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    
-    const liveArticles = this.articles
-      .filter(article => article.isLive === true)
-      .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-    
-    return liveArticles
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "summary" } },
+          { field: { Name: "content" } },
+          { field: { Name: "category" } },
+          { field: { Name: "author" } },
+          { field: { Name: "publishedAt" } },
+          { field: { Name: "updatedAt" } },
+          { field: { Name: "imageUrl" } },
+          { field: { Name: "featured" } },
+          { field: { Name: "isLive" } },
+          { field: { Name: "viewCount" } },
+          { field: { Name: "status" } },
+          { field: { Name: "Tags" } }
+        ],
+        where: [
+          {
+            FieldName: "isLive",
+            Operator: "EqualTo",
+            Values: [true]
+          }
+        ],
+        orderBy: [
+          { fieldName: "publishedAt", sorttype: "DESC" }
+        ]
+      }
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching live articles:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return []
+    }
   }
 
   async create(articleData) {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    const newId = Math.max(...this.articles.map(a => a.Id)) + 1
-    const newArticle = {
-      Id: newId,
-      title: articleData.title || "Untitled Article",
-      summary: articleData.summary || "",
-      content: articleData.content || "",
-      category: articleData.category || "general",
-      author: articleData.author || "NewsHub Pro",
-      publishedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      imageUrl: articleData.imageUrl || "",
-      tags: articleData.tags || [],
-      featured: articleData.featured || false,
-      isLive: articleData.isLive || false,
-      viewCount: 0,
-      status: "published"
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        records: [
+          {
+            Name: articleData.title || "Untitled Article",
+            title: articleData.title || "Untitled Article",
+            summary: articleData.summary || "",
+            content: articleData.content || "",
+            category: articleData.category || "general",
+            author: articleData.author || "NewsHub Pro",
+            publishedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            imageUrl: articleData.imageUrl || "",
+            featured: articleData.featured || false,
+            isLive: articleData.isLive || false,
+            viewCount: 0,
+            status: articleData.status || "published",
+            Tags: Array.isArray(articleData.tags) ? articleData.tags.join(',') : ""
+          }
+        ]
+      }
+      
+      const response = await this.apperClient.createRecord(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        toast.error(response.message)
+        return null
+      }
+      
+      if (response.results) {
+        const successfulRecords = response.results.filter(result => result.success)
+        const failedRecords = response.results.filter(result => !result.success)
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create articles ${failedRecords.length} records:${JSON.stringify(failedRecords)}`)
+          
+          failedRecords.forEach(record => {
+            record.errors?.forEach(error => {
+              toast.error(`${error.fieldLabel}: ${error.message}`)
+            })
+            if (record.message) toast.error(record.message)
+          })
+        }
+        
+        return successfulRecords.length > 0 ? successfulRecords[0].data : null
+      }
+      
+      return null
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error creating article:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return null
     }
-    
-    this.articles.unshift(newArticle)
-    return newArticle
   }
 
   async update(id, updates) {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    const index = this.articles.findIndex(article => article.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Article not found")
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const updateData = {
+        Id: parseInt(id),
+        updatedAt: new Date().toISOString()
+      }
+      
+      // Only include updateable fields
+      if (updates.Name !== undefined) updateData.Name = updates.Name
+      if (updates.title !== undefined) updateData.title = updates.title
+      if (updates.summary !== undefined) updateData.summary = updates.summary
+      if (updates.content !== undefined) updateData.content = updates.content
+      if (updates.category !== undefined) updateData.category = updates.category
+      if (updates.author !== undefined) updateData.author = updates.author
+      if (updates.publishedAt !== undefined) updateData.publishedAt = updates.publishedAt
+      if (updates.imageUrl !== undefined) updateData.imageUrl = updates.imageUrl
+      if (updates.featured !== undefined) updateData.featured = updates.featured
+      if (updates.isLive !== undefined) updateData.isLive = updates.isLive
+      if (updates.viewCount !== undefined) updateData.viewCount = updates.viewCount
+      if (updates.status !== undefined) updateData.status = updates.status
+      if (updates.tags !== undefined) updateData.Tags = Array.isArray(updates.tags) ? updates.tags.join(',') : updates.tags
+      if (updates.Tags !== undefined) updateData.Tags = updates.Tags
+      
+      const params = {
+        records: [updateData]
+      }
+      
+      const response = await this.apperClient.updateRecord(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        toast.error(response.message)
+        return null
+      }
+      
+      if (response.results) {
+        const failedUpdates = response.results.filter(result => !result.success)
+        
+        if (failedUpdates.length > 0) {
+          console.error(`Failed to update articles ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`)
+          
+          failedUpdates.forEach(record => {
+            record.errors?.forEach(error => {
+              toast.error(`${error.fieldLabel}: ${error.message}`)
+            })
+            if (record.message) toast.error(record.message)
+          })
+        }
+        
+        const successfulUpdates = response.results.filter(result => result.success)
+        return successfulUpdates.length > 0 ? successfulUpdates[0].data : null
+      }
+      
+      return null
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error updating article:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return null
     }
-    
-this.articles[index] = {
-      ...this.articles[index],
-      ...updates,
-      updatedAt: new Date().toISOString()
-    }
-    
-    // Trigger real-time sync by updating the articles array reference
-    this.articles = [...this.articles]
-    
-    return this.articles[index]
   }
 
   async delete(id) {
-    await new Promise(resolve => setTimeout(resolve, 250))
-    
-    const index = this.articles.findIndex(article => article.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Article not found")
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        RecordIds: [parseInt(id)]
+      }
+      
+      const response = await this.apperClient.deleteRecord(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        toast.error(response.message)
+        return false
+      }
+      
+      if (response.results) {
+        const failedDeletions = response.results.filter(result => !result.success)
+        
+        if (failedDeletions.length > 0) {
+          console.error(`Failed to delete articles ${failedDeletions.length} records:${JSON.stringify(failedDeletions)}`)
+          
+          failedDeletions.forEach(record => {
+            if (record.message) toast.error(record.message)
+          })
+        }
+        
+        const successfulDeletions = response.results.filter(result => result.success)
+        return successfulDeletions.length > 0
+      }
+      
+      return false
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error deleting article:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return false
     }
-    
-    const deletedArticle = this.articles.splice(index, 1)[0]
-    return deletedArticle
   }
 
   async search(query) {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    
-    const searchTerm = query.toLowerCase()
-    const results = this.articles.filter(article =>
-      article.title.toLowerCase().includes(searchTerm) ||
-      article.summary.toLowerCase().includes(searchTerm) ||
-      article.content.toLowerCase().includes(searchTerm) ||
-      article.tags.some(tag => tag.toLowerCase().includes(searchTerm))
-    )
-    
-    return results.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "summary" } },
+          { field: { Name: "content" } },
+          { field: { Name: "category" } },
+          { field: { Name: "author" } },
+          { field: { Name: "publishedAt" } },
+          { field: { Name: "updatedAt" } },
+          { field: { Name: "imageUrl" } },
+          { field: { Name: "featured" } },
+          { field: { Name: "isLive" } },
+          { field: { Name: "viewCount" } },
+          { field: { Name: "status" } },
+          { field: { Name: "Tags" } }
+        ],
+        whereGroups: [
+          {
+            operator: "OR",
+            subGroups: [
+              {
+                conditions: [
+                  {
+                    fieldName: "title",
+                    operator: "Contains",
+                    values: [query]
+                  }
+                ]
+              },
+              {
+                conditions: [
+                  {
+                    fieldName: "summary",
+                    operator: "Contains",
+                    values: [query]
+                  }
+                ]
+              },
+              {
+                conditions: [
+                  {
+                    fieldName: "content",
+                    operator: "Contains",
+                    values: [query]
+                  }
+                ]
+              },
+              {
+                conditions: [
+                  {
+                    fieldName: "Tags",
+                    operator: "Contains",
+                    values: [query]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        orderBy: [
+          { fieldName: "publishedAt", sorttype: "DESC" }
+        ]
+      }
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error searching articles:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return []
+    }
   }
 
   async incrementViewCount(id) {
-    const article = this.articles.find(a => a.Id === parseInt(id))
-    if (article) {
-      article.viewCount = (article.viewCount || 0) + 1
+    try {
+      const article = await this.getById(id)
+      if (article) {
+        const newViewCount = (article.viewCount || 0) + 1
+        await this.update(id, { viewCount: newViewCount })
+      }
+    } catch (error) {
+      console.error("Error incrementing view count:", error.message)
     }
   }
 }

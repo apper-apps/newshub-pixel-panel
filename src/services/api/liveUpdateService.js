@@ -1,114 +1,291 @@
-import liveUpdatesData from "@/services/mockData/liveUpdates.json"
+import { toast } from 'react-toastify'
 
 class LiveUpdateService {
   constructor() {
-    this.liveUpdates = [...liveUpdatesData]
+    this.tableName = 'live_update'
+    this.apperClient = null
+    this.initializeClient()
+  }
+
+  initializeClient() {
+    if (typeof window !== 'undefined' && window.ApperSDK) {
+      const { ApperClient } = window.ApperSDK
+      this.apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+    }
   }
 
   async getAll() {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    
-    return [...this.liveUpdates].sort((a, b) => 
-      new Date(b.timestamp) - new Date(a.timestamp)
-    )
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "articleId" } },
+          { field: { Name: "content" } },
+          { field: { Name: "timestamp" } },
+          { field: { Name: "Tags" } }
+        ],
+        orderBy: [
+          { fieldName: "timestamp", sorttype: "DESC" }
+        ]
+      }
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        toast.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching live updates:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return []
+    }
   }
 
-async getByArticleId(articleId) {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    
-    const updates = this.liveUpdates
-      .filter(update => update.articleId === parseInt(articleId) || update.articleId === articleId.toString())
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    
-    return updates
+  async getByArticleId(articleId) {
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "articleId" } },
+          { field: { Name: "content" } },
+          { field: { Name: "timestamp" } },
+          { field: { Name: "Tags" } }
+        ],
+        where: [
+          {
+            FieldName: "articleId",
+            Operator: "EqualTo",
+            Values: [articleId.toString()]
+          }
+        ],
+        orderBy: [
+          { fieldName: "timestamp", sorttype: "DESC" }
+        ]
+      }
+      
+      const response = await this.apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching live updates by article:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return []
+    }
   }
 
   async getRecent(limit = 10) {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    
-    const recentUpdates = [...this.liveUpdates]
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      .slice(0, limit)
-    
-    return recentUpdates
-  }
-
-async create(updateData) {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    const newId = Math.max(...this.liveUpdates.map(u => u.Id), 0) + 1
-    const currentTime = new Date()
-    
-    // Validate social media link if provided
-    let validatedSocialLink = null
-    if (updateData.socialLink && updateData.socialLink.trim()) {
-      const socialLink = updateData.socialLink.trim()
-      if (this.isValidSocialMediaUrl(socialLink)) {
-        validatedSocialLink = socialLink
-      }
-    }
-    
-    const newUpdate = {
-      Id: newId,
-      articleId: updateData.articleId.toString(),
-      heading: updateData.heading || "Breaking Update",
-      content: updateData.content,
-      socialLink: validatedSocialLink,
-      timestamp: currentTime.toISOString()
-    }
-    
-    this.liveUpdates.unshift(newUpdate)
-    return newUpdate
-  }
-
-  // Helper method to validate social media URLs
-  isValidSocialMediaUrl(url) {
     try {
-      const urlObj = new URL(url)
-      const domain = urlObj.hostname.toLowerCase()
+      if (!this.apperClient) this.initializeClient()
       
-      // Check for common social media domains
-      const socialDomains = [
-        'twitter.com', 'x.com', 'www.twitter.com', 'www.x.com',
-        'facebook.com', 'www.facebook.com', 'fb.com', 'www.fb.com',
-        'instagram.com', 'www.instagram.com',
-        'linkedin.com', 'www.linkedin.com',
-        'youtube.com', 'www.youtube.com', 'youtu.be',
-        'tiktok.com', 'www.tiktok.com'
-      ]
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "articleId" } },
+          { field: { Name: "content" } },
+          { field: { Name: "timestamp" } },
+          { field: { Name: "Tags" } }
+        ],
+        orderBy: [
+          { fieldName: "timestamp", sorttype: "DESC" }
+        ],
+        pagingInfo: { limit }
+      }
       
-      return socialDomains.some(domain => domain.includes(urlObj.hostname.toLowerCase())) ||
-             urlObj.protocol === 'https:' || urlObj.protocol === 'http:'
-    } catch {
-      return false
+      const response = await this.apperClient.fetchRecords(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        return []
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching recent live updates:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return []
+    }
+  }
+
+  async create(updateData) {
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const currentTime = new Date()
+      
+      const params = {
+        records: [
+          {
+            Name: updateData.heading || "Breaking Update",
+            articleId: updateData.articleId.toString(),
+            content: updateData.content,
+            timestamp: currentTime.toISOString(),
+            Tags: Array.isArray(updateData.tags) ? updateData.tags.join(',') : ""
+          }
+        ]
+      }
+      
+      const response = await this.apperClient.createRecord(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        toast.error(response.message)
+        return null
+      }
+      
+      if (response.results) {
+        const successfulRecords = response.results.filter(result => result.success)
+        const failedRecords = response.results.filter(result => !result.success)
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create live updates ${failedRecords.length} records:${JSON.stringify(failedRecords)}`)
+          
+          failedRecords.forEach(record => {
+            record.errors?.forEach(error => {
+              toast.error(`${error.fieldLabel}: ${error.message}`)
+            })
+            if (record.message) toast.error(record.message)
+          })
+        }
+        
+        return successfulRecords.length > 0 ? successfulRecords[0].data : null
+      }
+      
+      return null
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error creating live update:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return null
     }
   }
 
   async update(id, updates) {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    const index = this.liveUpdates.findIndex(update => update.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Live update not found")
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const updateData = {
+        Id: parseInt(id)
+      }
+      
+      // Only include updateable fields
+      if (updates.Name !== undefined) updateData.Name = updates.Name
+      if (updates.heading !== undefined) updateData.Name = updates.heading
+      if (updates.articleId !== undefined) updateData.articleId = updates.articleId.toString()
+      if (updates.content !== undefined) updateData.content = updates.content
+      if (updates.timestamp !== undefined) updateData.timestamp = updates.timestamp
+      if (updates.tags !== undefined) updateData.Tags = Array.isArray(updates.tags) ? updates.tags.join(',') : updates.tags
+      if (updates.Tags !== undefined) updateData.Tags = updates.Tags
+      
+      const params = {
+        records: [updateData]
+      }
+      
+      const response = await this.apperClient.updateRecord(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        toast.error(response.message)
+        return null
+      }
+      
+      if (response.results) {
+        const failedUpdates = response.results.filter(result => !result.success)
+        
+        if (failedUpdates.length > 0) {
+          console.error(`Failed to update live updates ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`)
+          
+          failedUpdates.forEach(record => {
+            record.errors?.forEach(error => {
+              toast.error(`${error.fieldLabel}: ${error.message}`)
+            })
+            if (record.message) toast.error(record.message)
+          })
+        }
+        
+        const successfulUpdates = response.results.filter(result => result.success)
+        return successfulUpdates.length > 0 ? successfulUpdates[0].data : null
+      }
+      
+      return null
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error updating live update:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return null
     }
-    
-    this.liveUpdates[index] = { ...this.liveUpdates[index], ...updates }
-    return this.liveUpdates[index]
   }
 
   async delete(id) {
-    await new Promise(resolve => setTimeout(resolve, 250))
-    
-    const index = this.liveUpdates.findIndex(update => update.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Live update not found")
+    try {
+      if (!this.apperClient) this.initializeClient()
+      
+      const params = {
+        RecordIds: [parseInt(id)]
+      }
+      
+      const response = await this.apperClient.deleteRecord(this.tableName, params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        toast.error(response.message)
+        return false
+      }
+      
+      if (response.results) {
+        const failedDeletions = response.results.filter(result => !result.success)
+        
+        if (failedDeletions.length > 0) {
+          console.error(`Failed to delete live updates ${failedDeletions.length} records:${JSON.stringify(failedDeletions)}`)
+          
+          failedDeletions.forEach(record => {
+            if (record.message) toast.error(record.message)
+          })
+        }
+        
+        const successfulDeletions = response.results.filter(result => result.success)
+        return successfulDeletions.length > 0
+      }
+      
+      return false
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error deleting live update:", error?.response?.data?.message)
+      } else {
+        console.error(error.message)
+      }
+      return false
     }
-    
-    const deletedUpdate = this.liveUpdates.splice(index, 1)[0]
-    return deletedUpdate
   }
 
-  // Simulate real-time updates
   async generateRandomUpdate() {
     const sampleUpdates = [
       "Breaking: New developments in ongoing story...",
