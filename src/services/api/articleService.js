@@ -51,20 +51,15 @@ const response = await this.apperClient.fetchRecords(this.tableName, params)
         toast.error(response.message)
         return []
       }
-      
-      // Return optimized response with pagination info
-      return {
-        data: response.data || [],
-        total: response.total || 0,
-        hasMore: (response.data?.length || 0) === params.pagingInfo.limit
-      }
+// Return data directly
+      return response.data || []
     } catch (error) {
       if (error?.response?.data?.message) {
         console.error("Database error fetching articles:", error?.response?.data?.message)
       } else {
         console.error("Article service error:", error.message)
       }
-      return { data: [], total: 0, hasMore: false }
+return []
     }
   }
 
