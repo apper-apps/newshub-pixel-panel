@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Link } from "react-router-dom"
-import ApperIcon from "@/components/ApperIcon"
-import ArticleCard from "@/components/molecules/ArticleCard"
-import LiveUpdate from "@/components/molecules/LiveUpdate"
-import Button from "@/components/atoms/Button"
-import Badge from "@/components/atoms/Badge"
-import Card from "@/components/atoms/Card"
-import Loading from "@/components/ui/Loading"
-import Error from "@/components/ui/Error"
-import Empty from "@/components/ui/Empty"
-import articleService from "@/services/api/articleService"
-import liveUpdateService from "@/services/api/liveUpdateService"
+import React, { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import categoryService from "@/services/api/categoryService";
+import liveUpdateService from "@/services/api/liveUpdateService";
+import articleService from "@/services/api/articleService";
+import ApperIcon from "@/components/ApperIcon";
+import ArticleCard from "@/components/molecules/ArticleCard";
+import LiveUpdate from "@/components/molecules/LiveUpdate";
+import Header from "@/components/organisms/Header";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Empty from "@/components/ui/Empty";
+import Badge from "@/components/atoms/Badge";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
 
 const HomePage = () => {
 const [articles, setArticles] = useState([])
@@ -61,12 +63,31 @@ const [allArticles, featured, popular, updates, breakingArticles] = await Promis
   if (error) return <Error message={error} onRetry={loadData} />
   if (!articles.length) return <Empty title="No news available" message="Check back later for the latest updates." />
 
-  const categoryGroups = articles.reduce((groups, article) => {
-    const category = article.category
-    if (!groups[category]) groups[category] = []
-    groups[category].push(article)
-    return groups
-  }, {})
+// Transform articles into category groups with metadata
+  const categoryGroups = React.useMemo(() => {
+    if (!articles || !Array.isArray(articles)) return [];
+    
+    // Group articles by category
+    const grouped = articles.reduce((groups, article) => {
+      if (!article?.category) return groups;
+      const category = article.category.toLowerCase();
+      if (!groups[category]) groups[category] = [];
+      groups[category].push(article);
+      return groups;
+    }, {});
+    
+    // Convert to array with category metadata
+    return Object.entries(grouped).map(([categorySlug, categoryArticles]) => {
+      // Find category metadata (fallback to basic info if not found)
+      const categoryMeta = {
+        name: categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1),
+        category: categorySlug,
+        articles: categoryArticles || []
+      };
+      
+      return categoryMeta;
+    }).filter(group => group.articles.length > 0);
+  }, [articles]);
 
   const secondaryArticles = articles.filter(article => article.Id !== featuredArticle?.Id).slice(0, 6)
 
@@ -270,13 +291,13 @@ const [allArticles, featured, popular, updates, breakingArticles] = await Promis
               transition={{ delay: 0.6 }}
               className="mt-16 space-y-8"
             >
-{(categoryGroups || []).map((group, groupIndex) => {
-                if (!group || !group.name || !group.category) {
+{categoryGroups.map((group, groupIndex) => {
+                if (!group || !group.name || !group.category || !group.articles?.length) {
                   return null;
                 }
                 
                 return (
-                  <div key={group.name} className="space-y-6">
+                  <div key={group.category} className="space-y-6">
                     <div className="flex items-center justify-between">
                       <h2 className="text-2xl font-display font-bold text-secondary border-b-2 border-primary pb-2">
                         {group.name}
@@ -290,10 +311,7 @@ const [allArticles, featured, popular, updates, breakingArticles] = await Promis
                       </Link>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {(articles || [])
-                        .filter(article => 
-                          article?.category?.toLowerCase() === group.category?.toLowerCase()
-                        )
+                      {group.articles
                         .slice(0, 3)
                         .map((article, index) => {
                           if (!article?.Id) {
