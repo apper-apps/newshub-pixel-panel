@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import ApperIcon from "@/components/ApperIcon"
@@ -7,6 +7,58 @@ import Card from "@/components/atoms/Card"
 import { formatTimestamp } from "@/utils/formatDate"
 
 const ArticleCard = ({ article, featured = false, showCategory = true }) => {
+  const [imageError, setImageError] = useState(false)
+  const [imageLoading, setImageLoading] = useState(true)
+
+  const handleImageError = () => {
+    setImageError(true)
+    setImageLoading(false)
+  }
+
+  const handleImageLoad = () => {
+    setImageLoading(false)
+  }
+
+  // Clean up image URL to handle encoding issues
+  const getCleanImageUrl = (url) => {
+    if (!url) return null
+    return url.replace(/&amp;/g, '&')
+  }
+
+  const renderFallbackImage = (className) => (
+    <div className={`${className} bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center`}>
+      <div className="text-center text-gray-500">
+        <ApperIcon name="Image" size={48} className="mx-auto mb-2 opacity-50" />
+        <p className="text-sm font-medium">Image unavailable</p>
+      </div>
+    </div>
+  )
+
+  const renderImage = (className, fallbackClassName) => {
+    const cleanUrl = getCleanImageUrl(article.imageUrl)
+    
+    if (imageError || !cleanUrl) {
+      return renderFallbackImage(fallbackClassName)
+    }
+
+    return (
+      <div className="relative">
+        {imageLoading && (
+          <div className={`${fallbackClassName} bg-gray-200 animate-pulse flex items-center justify-center absolute inset-0 z-10`}>
+            <ApperIcon name="Loader2" size={24} className="animate-spin text-gray-400" />
+          </div>
+        )}
+        <img
+          src={cleanUrl}
+          alt={article.title}
+          className={className}
+          onError={handleImageError}
+          onLoad={handleImageLoad}
+          loading="lazy"
+        />
+      </div>
+    )
+  }
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
@@ -24,13 +76,12 @@ const ArticleCard = ({ article, featured = false, showCategory = true }) => {
         animate="visible"
         className="relative overflow-hidden rounded-2xl shadow-2xl group"
       >
-        <Link to={`/article/${article.Id}`}>
+<Link to={`/article/${article.Id}`}>
           <div className="relative h-[400px] lg:h-[500px]">
-            <img
-              src={article.imageUrl}
-              alt={article.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
+            {renderImage(
+              "w-full h-full object-cover transition-transform duration-700 group-hover:scale-110",
+              "w-full h-full object-cover"
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
             
             {article.isLive && (
@@ -85,14 +136,12 @@ const ArticleCard = ({ article, featured = false, showCategory = true }) => {
       animate="visible"
     >
       <Card>
-        <Link to={`/article/${article.Id}`} className="block">
+<Link to={`/article/${article.Id}`} className="block">
           <div className="relative">
-            <img
-              src={article.imageUrl}
-              alt={article.title}
-              className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            
+            {renderImage(
+              "w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105",
+              "w-full h-48 object-cover"
+            )}
             {article.isLive && (
               <div className="absolute top-3 left-3">
                 <Badge variant="live" className="animate-pulse">
