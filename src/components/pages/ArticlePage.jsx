@@ -1,27 +1,40 @@
-import React, { useState, useEffect } from "react"
-import { useParams, Link } from "react-router-dom"
-import { motion } from "framer-motion"
-import ApperIcon from "@/components/ApperIcon"
-import ArticleCard from "@/components/molecules/ArticleCard"
-import LiveUpdate from "@/components/molecules/LiveUpdate"
-import Button from "@/components/atoms/Button"
-import Badge from "@/components/atoms/Badge"
-import Card from "@/components/atoms/Card"
-import Loading from "@/components/ui/Loading"
-import Error from "@/components/ui/Error"
-import { formatDateTime, formatTimestamp } from "@/utils/formatDate"
-import articleService from "@/services/api/articleService"
-import liveUpdateService from "@/services/api/liveUpdateService"
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import articleService from "@/services/api/articleService";
+import ApperIcon from "@/components/ApperIcon";
+import ArticleCard from "@/components/molecules/ArticleCard";
+import LiveUpdate from "@/components/molecules/LiveUpdate";
+import Header from "@/components/organisms/Header";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Badge from "@/components/atoms/Badge";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
+import { formatDateTime, formatTimestamp } from "@/utils/formatDate";
+import liveUpdateService from "@/services/api/liveUpdateService";
 
 const ArticlePage = () => {
-  const { id } = useParams()
-const [article, setArticle] = useState(null)
-  const [liveUpdates, setLiveUpdates] = useState([])
-  const [relatedArticles, setRelatedArticles] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
-  const [showLiveTab, setShowLiveTab] = useState(false)
-  const [refreshing, setRefreshing] = useState(false)
+  const [article, setArticle] = useState(null);
+  const [liveUpdates, setLiveUpdates] = useState([]);
+  const [relatedArticles, setRelatedArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const [showLiveTab, setShowLiveTab] = useState(false);
+
+  const { id } = useParams();
+
+  // Share functionality
+  const shareArticle = () => {
+    if (navigator.share && article) {
+      navigator.share({
+        title: article.title,
+        text: article.summary,
+        url: window.location.href,
+      })
+    }
+  }
 
   const loadData = async () => {
     try {
@@ -61,23 +74,6 @@ const [article, setArticle] = useState(null)
   useEffect(() => {
     if (article?.isLive) {
       // Refresh live updates every 5 minutes
-      const interval = setInterval(() => {
-        liveUpdateService.getByArticleId(id)
-          .then(setLiveUpdates)
-          .catch(console.error)
-      }, 300000)
-      
-      return () => clearInterval(interval)
-    }
-  }, [article?.isLive, id])
-
-  if (loading) return <Loading />
-  if (error) return <Error message={error} onRetry={loadData} />
-  if (!article) return <Error title="Article not found" message="The article you're looking for doesn't exist." showRetry={false} />
-
-// Auto-refresh live updates every 5 minutes for live articles
-  useEffect(() => {
-    if (article?.isLive) {
       const interval = setInterval(async () => {
         try {
           setRefreshing(true)
@@ -88,15 +84,15 @@ const [article, setArticle] = useState(null)
         } finally {
           setRefreshing(false)
         }
-      }, 300000) // 5 minutes
-
+      }, 300000)
+      
       return () => clearInterval(interval)
     }
   }, [article?.isLive, id])
 
   if (loading) return <Loading />
   if (error) return <Error message={error} onRetry={loadData} />
-  if (!article) return <Error message="Article not found" />
+  if (!article) return <Error title="Article not found" message="The article you're looking for doesn't exist." showRetry={false} />
 
   return (
     <div className="min-h-screen bg-background">
