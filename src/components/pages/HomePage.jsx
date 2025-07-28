@@ -270,37 +270,51 @@ const [allArticles, featured, popular, updates, breakingArticles] = await Promis
               transition={{ delay: 0.6 }}
               className="mt-16 space-y-8"
             >
-              {categoryGroups.map((group, groupIndex) => (
-                <div key={group.name} className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-display font-bold text-secondary border-b-2 border-primary pb-2">
-                      {group.name}
-                    </h2>
-                    <Link 
-                      to={`/category/${group.category}`}
-                      className="text-primary hover:text-primary/80 font-medium flex items-center space-x-1"
-                    >
-                      <span>See full coverage</span>
-                      <ApperIcon name="ArrowRight" size={16} />
-                    </Link>
+{(categoryGroups || []).map((group, groupIndex) => {
+                if (!group || !group.name || !group.category) {
+                  return null;
+                }
+                
+                return (
+                  <div key={group.name} className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-2xl font-display font-bold text-secondary border-b-2 border-primary pb-2">
+                        {group.name}
+                      </h2>
+                      <Link 
+                        to={`/category/${group.category}`}
+                        className="text-primary hover:text-primary/80 font-medium flex items-center space-x-1"
+                      >
+                        <span>See full coverage</span>
+                        <ApperIcon name="ArrowRight" size={16} />
+                      </Link>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {(articles || [])
+                        .filter(article => 
+                          article?.category?.toLowerCase() === group.category?.toLowerCase()
+                        )
+                        .slice(0, 3)
+                        .map((article, index) => {
+                          if (!article?.Id) {
+                            return null;
+                          }
+                          
+                          return (
+                            <motion.div
+                              key={article.Id}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.1 * index }}
+                            >
+                              <ArticleCard article={article} showCategory={false} />
+                            </motion.div>
+                          );
+                        })}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {articles
-                      .filter(article => article.category.toLowerCase() === group.category.toLowerCase())
-                      .slice(0, 3)
-                      .map((article, index) => (
-                        <motion.div
-                          key={article.Id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 * index }}
-                        >
-                          <ArticleCard article={article} showCategory={false} />
-                        </motion.div>
-                      ))}
-                  </div>
-</div>
-              ))}
+                );
+              })}
             </motion.section>
 
             {/* Secondary Stories Grid */}
