@@ -13,11 +13,11 @@ class LiveUpdateService {
     )
   }
 
-  async getByArticleId(articleId) {
+async getByArticleId(articleId) {
     await new Promise(resolve => setTimeout(resolve, 200))
     
     const updates = this.liveUpdates
-      .filter(update => update.articleId === articleId.toString())
+      .filter(update => update.articleId === parseInt(articleId) || update.articleId === articleId.toString())
       .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     
     return updates
@@ -36,20 +36,52 @@ class LiveUpdateService {
 async create(updateData) {
     await new Promise(resolve => setTimeout(resolve, 300))
     
-    const newId = Math.max(...this.liveUpdates.map(u => u.Id)) + 1
+    const newId = Math.max(...this.liveUpdates.map(u => u.Id), 0) + 1
     const currentTime = new Date()
+    
+    // Validate social media link if provided
+    let validatedSocialLink = null
+    if (updateData.socialLink && updateData.socialLink.trim()) {
+      const socialLink = updateData.socialLink.trim()
+      if (this.isValidSocialMediaUrl(socialLink)) {
+        validatedSocialLink = socialLink
+      }
+    }
     
     const newUpdate = {
       Id: newId,
       articleId: updateData.articleId.toString(),
-      heading: updateData.heading || "Live Update",
+      heading: updateData.heading || "Breaking Update",
       content: updateData.content,
-      socialLink: updateData.socialLink || null,
+      socialLink: validatedSocialLink,
       timestamp: currentTime.toISOString()
     }
     
     this.liveUpdates.unshift(newUpdate)
     return newUpdate
+  }
+
+  // Helper method to validate social media URLs
+  isValidSocialMediaUrl(url) {
+    try {
+      const urlObj = new URL(url)
+      const domain = urlObj.hostname.toLowerCase()
+      
+      // Check for common social media domains
+      const socialDomains = [
+        'twitter.com', 'x.com', 'www.twitter.com', 'www.x.com',
+        'facebook.com', 'www.facebook.com', 'fb.com', 'www.fb.com',
+        'instagram.com', 'www.instagram.com',
+        'linkedin.com', 'www.linkedin.com',
+        'youtube.com', 'www.youtube.com', 'youtu.be',
+        'tiktok.com', 'www.tiktok.com'
+      ]
+      
+      return socialDomains.some(domain => domain.includes(urlObj.hostname.toLowerCase())) ||
+             urlObj.protocol === 'https:' || urlObj.protocol === 'http:'
+    } catch {
+      return false
+    }
   }
 
   async update(id, updates) {

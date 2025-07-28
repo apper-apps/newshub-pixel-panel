@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { motion } from "framer-motion"
-import { toast } from "react-toastify"
-import ApperIcon from "@/components/ApperIcon"
-import Button from "@/components/atoms/Button"
-import Input from "@/components/atoms/Input"
-import Card from "@/components/atoms/Card"
-import Badge from "@/components/atoms/Badge"
-import Loading from "@/components/ui/Loading"
-import Error from "@/components/ui/Error"
-import articleService from "@/services/api/articleService"
-import liveUpdateService from "@/services/api/liveUpdateService"
-import categoryService from "@/services/api/categoryService"
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import categoryService from "@/services/api/categoryService";
+import liveUpdateService from "@/services/api/liveUpdateService";
+import articleService from "@/services/api/articleService";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Badge from "@/components/atoms/Badge";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
 
 const ArticleEditor = () => {
   const { id } = useParams()
@@ -39,7 +39,8 @@ const [newUpdate, setNewUpdate] = useState("")
   const [newUpdateHeading, setNewUpdateHeading] = useState("")
   const [newUpdateSocialLink, setNewUpdateSocialLink] = useState("")
   const [tagInput, setTagInput] = useState("")
-
+  const [previewUpdate, setPreviewUpdate] = useState(false)
+  const [addingUpdate, setAddingUpdate] = useState(false)
   useEffect(() => {
     loadInitialData()
   }, [id])
@@ -104,7 +105,7 @@ const [newUpdate, setNewUpdate] = useState("")
     }
   }
 
-  const handleAddLiveUpdate = async () => {
+const handleAddLiveUpdate = async () => {
     if (!newUpdate.trim()) {
       toast.error("Update content is required")
       return
@@ -116,7 +117,8 @@ const [newUpdate, setNewUpdate] = useState("")
     }
 
     try {
-const update = await liveUpdateService.create({
+      setAddingUpdate(true)
+      const update = await liveUpdateService.create({
         articleId: id,
         heading: newUpdateHeading.trim() || "Breaking Update",
         content: newUpdate.trim(),
@@ -125,10 +127,15 @@ const update = await liveUpdateService.create({
 
       setLiveUpdates(prev => [update, ...prev])
       setNewUpdate("")
-      toast.success("Live update added!")
+      setNewUpdateHeading("")
+      setNewUpdateSocialLink("")
+      setPreviewUpdate(false)
+      toast.success("Live update published successfully!")
 
     } catch (err) {
       toast.error(err.message || "Failed to add live update")
+    } finally {
+      setAddingUpdate(false)
     }
   }
 
@@ -136,12 +143,11 @@ const update = await liveUpdateService.create({
     try {
       await liveUpdateService.delete(updateId)
       setLiveUpdates(prev => prev.filter(update => update.Id !== updateId))
-      toast.success("Live update deleted!")
+      toast.success("Live update deleted successfully!")
     } catch (err) {
       toast.error(err.message || "Failed to delete live update")
     }
-  }
-
+}
   const handleAddTag = () => {
     if (!tagInput.trim()) return
     
@@ -317,53 +323,140 @@ const update = await liveUpdateService.create({
                   </div>
 
                   {/* Add New Update */}
+{/* Add New Update */}
                   <div className="mb-6">
-<div className="space-y-4 p-4 bg-gradient-to-r from-primary/5 to-orange-600/5 rounded-lg border border-primary/20">
-                      <div className="flex items-center space-x-2 mb-3">
-                        <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse" />
-                        <h4 className="font-semibold text-secondary">Add Live Update</h4>
-                        <Badge variant="live" className="text-xs">NEW</Badge>
+                    <div className="space-y-4 p-6 bg-gradient-to-r from-primary/5 to-orange-600/5 rounded-lg border border-primary/20 shadow-sm">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse" />
+                          <h4 className="font-display font-bold text-secondary">Add Live Update</h4>
+                          <Badge variant="live" className="text-xs animate-pulse">BREAKING</Badge>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPreviewUpdate(!previewUpdate)}
+                            disabled={!newUpdate.trim()}
+                          >
+                            <ApperIcon name="Eye" size={14} className="mr-1" />
+                            {previewUpdate ? "Edit" : "Preview"}
+                          </Button>
+                        </div>
                       </div>
                       
-                      <div className="space-y-3">
-                        <Input
-                          value={newUpdateHeading}
-                          onChange={(e) => setNewUpdateHeading(e.target.value)}
-                          placeholder="Update heading (e.g., 'Breaking News', 'Latest Development')"
-                          className="w-full"
-                        />
-                        
-                        <textarea
-                          value={newUpdate}
-                          onChange={(e) => setNewUpdate(e.target.value)}
-                          placeholder="Write your live update content here..."
-                          rows={3}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary resize-none"
-                        />
-                        
-                        <Input
-                          value={newUpdateSocialLink}
-                          onChange={(e) => setNewUpdateSocialLink(e.target.value)}
-                          placeholder="Social media link (Twitter, Facebook, etc.) - Optional"
-                          className="w-full"
-                        />
-                      </div>
+                      {!previewUpdate ? (
+                        <div className="space-y-4">
+                          <Input
+                            value={newUpdateHeading}
+                            onChange={(e) => setNewUpdateHeading(e.target.value)}
+                            placeholder="Update heading (e.g., 'Breaking News', 'Latest Development')"
+                            className="w-full font-medium"
+                          />
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Update Content *
+                            </label>
+                            <textarea
+                              value={newUpdate}
+                              onChange={(e) => setNewUpdate(e.target.value)}
+                              placeholder="Write your live update content here. Include key details, quotes, and relevant information..."
+                              rows={4}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Social Media Reference (Optional)
+                            </label>
+                            <Input
+                              value={newUpdateSocialLink}
+                              onChange={(e) => setNewUpdateSocialLink(e.target.value)}
+                              placeholder="https://twitter.com/username/status/... or https://facebook.com/..."
+                              className="w-full"
+                            />
+                            {newUpdateSocialLink && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                Supported: Twitter, Facebook, Instagram, LinkedIn, YouTube
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="border rounded-lg p-4 bg-white">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <h5 className="font-display font-bold text-lg text-secondary">
+                                {newUpdateHeading || 'Breaking Update'}
+                              </h5>
+                              <Badge variant="live" className="text-xs animate-pulse">
+                                PREVIEW
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2 text-sm text-gray-600">
+                              <ApperIcon name="Clock" size={14} />
+                              <span className="font-medium">
+                                {new Date().toLocaleString('en-US', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  timeZoneName: 'short'
+                                })}
+                              </span>
+                              <span>•</span>
+                              <span>Just now</span>
+                            </div>
+                            
+                            <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                              {newUpdate}
+                            </div>
+                            
+                            {newUpdateSocialLink && (
+                              <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <ApperIcon name="ExternalLink" size={14} className="text-primary" />
+                                  <span className="text-sm font-medium text-gray-700">Social Media Reference</span>
+                                </div>
+                                <a
+                                  href={newUpdateSocialLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:text-orange-600 underline text-sm break-all"
+                                >
+                                  {newUpdateSocialLink}
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">
-                          Timestamp will be automatically generated
-                        </span>
-<Button
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div className="text-xs text-gray-500 space-y-1">
+                          <div>Timestamp will be automatically generated</div>
+                          <div>Updates appear immediately on the live article</div>
+                        </div>
+                        <Button
                           variant="primary"
                           onClick={handleAddLiveUpdate}
-                          disabled={!newUpdate.trim()}
-                          className="px-6"
+                          disabled={!newUpdate.trim() || addingUpdate}
+                          className="px-6 bg-gradient-to-r from-primary to-orange-600 hover:from-orange-600 hover:to-primary"
                         >
-                          <ApperIcon name="Plus" size={16} className="mr-2" />
-                          Publish Live Update
+                          {addingUpdate ? (
+                            <>
+                              <ApperIcon name="Loader2" size={16} className="mr-2 animate-spin" />
+                              Publishing...
+                            </>
+                          ) : (
+                            <>
+                              <ApperIcon name="Radio" size={16} className="mr-2" />
+                              Publish Live Update
+                            </>
+                          )}
                         </Button>
                       </div>
-                    </div>
                   </div>
 
                   {/* Updates List */}

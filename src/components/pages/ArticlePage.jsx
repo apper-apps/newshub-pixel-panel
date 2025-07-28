@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import liveUpdateService from "@/services/api/liveUpdateService";
 import articleService from "@/services/api/articleService";
 import ApperIcon from "@/components/ApperIcon";
 import ArticleCard from "@/components/molecules/ArticleCard";
@@ -12,18 +13,17 @@ import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
 import Card from "@/components/atoms/Card";
 import { formatDateTime, formatTimestamp } from "@/utils/formatDate";
-import liveUpdateService from "@/services/api/liveUpdateService";
 
 const ArticlePage = () => {
+  const { id } = useParams();
   const [article, setArticle] = useState(null);
   const [liveUpdates, setLiveUpdates] = useState([]);
   const [relatedArticles, setRelatedArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [showLiveTab, setShowLiveTab] = useState(false);
-
-  const { id } = useParams();
+const [showLiveTab, setShowLiveTab] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
 
   // Share functionality
   const shareArticle = () => {
@@ -36,7 +36,7 @@ const ArticlePage = () => {
     }
   }
 
-  const loadData = async () => {
+const loadData = async () => {
     try {
       setLoading(true)
       setError("")
@@ -51,6 +51,7 @@ const ArticlePage = () => {
       if (articleData.isLive) {
         const updates = await liveUpdateService.getByArticleId(id)
         setLiveUpdates(updates)
+        setLastRefresh(new Date())
       }
       
       // Load related articles from same category
@@ -71,7 +72,7 @@ const ArticlePage = () => {
     loadData()
   }, [id])
 
-  useEffect(() => {
+useEffect(() => {
     if (article?.isLive) {
       // Refresh live updates every 5 minutes
       const interval = setInterval(async () => {
@@ -79,12 +80,13 @@ const ArticlePage = () => {
           setRefreshing(true)
           const updates = await liveUpdateService.getByArticleId(id)
           setLiveUpdates(updates)
+          setLastRefresh(new Date())
         } catch (err) {
           console.error('Failed to refresh live updates:', err)
         } finally {
           setRefreshing(false)
         }
-      }, 300000)
+      }, 300000) // 5 minutes
       
       return () => clearInterval(interval)
     }
@@ -125,7 +127,7 @@ const ArticlePage = () => {
                   <Badge variant="category">{article.category}</Badge>
 {article.isLive && (
                     <div className="flex items-center space-x-3">
-                      <Badge variant="live" className="animate-pulse">
+                      <Badge variant="live" className="animate-pulse bg-gradient-to-r from-red-600 to-orange-600">
                         <div className="w-2 h-2 bg-white rounded-full mr-1.5 animate-pulse" />
                         LIVE
                       </Badge>
@@ -133,9 +135,9 @@ const ArticlePage = () => {
                         variant={showLiveTab ? "primary" : "outline"}
                         size="sm"
                         onClick={() => setShowLiveTab(!showLiveTab)}
-                        className="text-sm"
+                        className={`text-sm transition-all ${showLiveTab ? 'bg-gradient-to-r from-primary to-orange-600' : 'border-primary text-primary hover:bg-primary hover:text-white'}`}
                       >
-                        <ApperIcon name={showLiveTab ? "Eye" : "Radio"} size={16} className="mr-2" />
+                        <ApperIcon name={showLiveTab ? "EyeOff" : "Radio"} size={16} className="mr-2" />
                         {showLiveTab ? "Hide Live Feed" : "View Live Feed"}
                       </Button>
                       {refreshing && (
@@ -144,6 +146,9 @@ const ArticlePage = () => {
                           Refreshing...
                         </div>
                       )}
+                      <div className="text-xs text-gray-500">
+                        Last updated: {lastRefresh.toLocaleTimeString()}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -194,31 +199,100 @@ const ArticlePage = () => {
                   exit={{ opacity: 0, height: 0 }}
                   className="mb-8"
                 >
-                  <Card className="border-l-4 border-l-primary">
-                    <Card.Header className="bg-gradient-to-r from-primary/10 to-orange-600/10">
+                  <Card className="border-l-4 border-l-primary shadow-lg">
+                    <Card.Header className="bg-gradient-to-r from-primary/10 to-orange-600/10 border-b border-primary/20">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse" />
-                          <h3 className="text-xl font-display font-bold text-secondary">Live Updates</h3>
-                          <Badge variant="live" className="animate-pulse">
+                          <h3 className="text-xl font-display font-bold text-secondary">Live Breaking Updates</h3>
+                          <Badge variant="live" className="animate-pulse bg-gradient-to-r from-red-600 to-orange-600">
                             {liveUpdates.length} Updates
                           </Badge>
                         </div>
-                        <span className="text-sm text-gray-600">
-                          Auto-refreshes every 5 minutes
-                        </span>
+                        <div className="text-right">
+                          <span className="text-sm text-gray-600 block">
+                            Auto-refreshes every 5 minutes
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {new Date().toLocaleString('en-US', { 
+                              weekday: 'long', 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              timeZoneName: 'short'
+                            })}
+                          </span>
+                        </div>
                       </div>
                     </Card.Header>
                     
-                    <Card.Content className="space-y-6 max-h-96 overflow-y-auto">
+                    <Card.Content className="space-y-6 max-h-96 overflow-y-auto custom-scrollbar">
                       {liveUpdates.map((update, index) => (
                         <motion.div
                           key={update.Id}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.1 }}
+                          className={`border-l-2 pl-4 pb-4 ${index === 0 ? 'border-l-red-500' : 'border-l-gray-300'} ${index < liveUpdates.length - 1 ? 'border-b border-gray-100' : ''}`}
                         >
-                          <LiveUpdate update={update} isNew={index === 0} />
+                          <div className="space-y-3">
+                            {/* Update Header */}
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-display font-bold text-lg text-secondary">
+                                {update.heading || 'Breaking Update'}
+                              </h4>
+                              {index === 0 && (
+                                <Badge variant="live" className="text-xs animate-pulse">
+                                  LATEST
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {/* Timestamp */}
+                            <div className="flex items-center space-x-2 text-sm text-gray-600">
+                              <ApperIcon name="Clock" size={14} />
+                              <span className="font-medium">
+                                {formatTimestamp(update.timestamp)}
+                              </span>
+                              <span>•</span>
+                              <span>
+                                {new Date(update.timestamp).toLocaleString('en-US', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  timeZoneName: 'short'
+                                })}
+                              </span>
+                            </div>
+                            
+                            {/* Content */}
+                            <div className="text-gray-700 leading-relaxed">
+                              {update.content.split('\n').map((paragraph, pIndex) => (
+                                <p key={pIndex} className="mb-2 last:mb-0">
+                                  {paragraph}
+                                </p>
+                              ))}
+                            </div>
+                            
+                            {/* Social Media Link */}
+                            {update.socialLink && (
+                              <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <ApperIcon name="ExternalLink" size={14} className="text-primary" />
+                                  <span className="text-sm font-medium text-gray-700">Social Media Reference</span>
+                                </div>
+                                <a
+                                  href={update.socialLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:text-orange-600 underline text-sm break-all transition-colors"
+                                >
+                                  {update.socialLink}
+                                </a>
+                              </div>
+                            )}
+                          </div>
                         </motion.div>
                       ))}
                     </Card.Content>
@@ -284,7 +358,7 @@ const ArticlePage = () => {
           {/* Sidebar */}
 <div className="space-y-8">
             {/* Live Updates Sidebar - Always visible for live articles */}
-            {article.isLive && liveUpdates.length > 0 && !showLiveTab && (
+{article.isLive && liveUpdates.length > 0 && !showLiveTab && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -292,27 +366,53 @@ const ArticlePage = () => {
                 className="sticky top-6"
               >
                 <Card className="border-l-4 border-l-primary shadow-lg">
-                  <Card.Header className="bg-gradient-to-r from-primary/10 to-orange-600/10">
+                  <Card.Header className="bg-gradient-to-r from-primary/10 to-orange-600/10 border-b border-primary/20">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse" />
-                        <h3 className="text-lg font-display font-bold text-secondary">Latest Updates</h3>
+                        <h3 className="text-lg font-display font-bold text-secondary">Breaking Updates</h3>
                       </div>
-                      <Badge variant="live" className="animate-pulse text-xs">
+                      <Badge variant="live" className="animate-pulse text-xs bg-gradient-to-r from-red-600 to-orange-600">
                         {liveUpdates.length}
                       </Badge>
                     </div>
                   </Card.Header>
                   
-                  <Card.Content className="space-y-4 max-h-80 overflow-y-auto">
+                  <Card.Content className="space-y-4 max-h-80 overflow-y-auto custom-scrollbar">
                     {liveUpdates.slice(0, 3).map((update, index) => (
                       <motion.div
                         key={update.Id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
+                        className={`border-l-2 pl-3 ${index === 0 ? 'border-l-red-500' : 'border-l-gray-300'}`}
                       >
-                        <LiveUpdate update={update} />
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h5 className="font-semibold text-sm text-secondary line-clamp-1">
+                              {update.heading || 'Breaking Update'}
+                            </h5>
+                            {index === 0 && (
+                              <Badge variant="live" className="text-xs animate-pulse">
+                                NEW
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-700 line-clamp-2">
+                            {update.content}
+                          </p>
+                          <div className="flex items-center space-x-2 text-xs text-gray-500">
+                            <ApperIcon name="Clock" size={12} />
+                            <span>{formatTimestamp(update.timestamp)}</span>
+                            {update.socialLink && (
+                              <>
+                                <span>•</span>
+                                <ApperIcon name="ExternalLink" size={12} className="text-primary" />
+                                <span className="text-primary">Social Link</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </motion.div>
                     ))}
                     {liveUpdates.length > 3 && (
@@ -320,7 +420,7 @@ const ArticlePage = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setShowLiveTab(true)}
-                        className="w-full mt-4"
+                        className="w-full mt-4 border-primary text-primary hover:bg-primary hover:text-white transition-all"
                       >
                         View All {liveUpdates.length} Updates
                         <ApperIcon name="ArrowRight" size={16} className="ml-2" />

@@ -349,17 +349,20 @@ const AdminDashboard = () => {
                 </Link>
               </div>
               <div className="space-y-4">
-                {recentUpdates.map((update) => (
+{recentUpdates.map((update) => (
                   <div key={update.Id} className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
                     <div className="flex-shrink-0 mt-1">
                       <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-secondary line-clamp-2">
+                      <h6 className="text-sm font-semibold text-secondary line-clamp-1 mb-1">
+                        {update.heading || 'Breaking Update'}
+                      </h6>
+                      <p className="text-sm text-gray-700 line-clamp-2 mb-2">
                         {update.content}
                       </p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <Badge variant="live" className="text-xs">
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="live" className="text-xs bg-gradient-to-r from-red-600 to-orange-600">
                           LIVE
                         </Badge>
                         <span className="text-xs text-gray-500">
@@ -368,6 +371,12 @@ const AdminDashboard = () => {
                         <span className="text-xs text-gray-500">
                           {new Date(update.timestamp).toLocaleTimeString()}
                         </span>
+                        {update.socialLink && (
+                          <>
+                            <span className="text-xs text-gray-400">•</span>
+                            <ApperIcon name="ExternalLink" size={12} className="text-primary" />
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
