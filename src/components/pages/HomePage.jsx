@@ -24,11 +24,11 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
-  const loadData = async () => {
+const loadData = async () => {
     try {
       setLoading(true)
       setError("")
-const [allArticles, featured, popular, updates, breakingArticles] = await Promise.all([
+      const [allArticles, featured, popular, updates, breakingArticles] = await Promise.all([
         articleService.getAll(),
         articleService.getFeatured(),
         articleService.getMostPopular(5),
@@ -36,11 +36,11 @@ const [allArticles, featured, popular, updates, breakingArticles] = await Promis
         articleService.getByCategory('breaking')
       ])
       
-      setArticles(allArticles)
-      setFeaturedArticle(featured)
-      setMostPopular(popular)
-      setLiveUpdates(updates)
-      setBreakingNews(breakingArticles.slice(0, 3))
+      setArticles(allArticles || [])
+      setFeaturedArticle(featured || null)
+      setMostPopular(popular || [])
+      setLiveUpdates(updates || [])
+      setBreakingNews((breakingArticles || []).slice(0, 3))
     } catch (err) {
       setError(err.message || "Failed to load news content")
     } finally {
@@ -48,11 +48,11 @@ const [allArticles, featured, popular, updates, breakingArticles] = await Promis
     }
   }
 
-  useEffect(() => {
+useEffect(() => {
     loadData()
     
-// Real-time live updates refresh every 5 minutes (300000ms)
-const interval = setInterval(async () => {
+    // Real-time live updates refresh every 5 minutes (300000ms)
+    const interval = setInterval(async () => {
       try {
         const [updatedArticles, freshUpdates] = await Promise.all([
           articleService.getAll(),
@@ -60,8 +60,8 @@ const interval = setInterval(async () => {
         ])
         
         // Update articles to reflect any live changes
-        setArticles(updatedArticles)
-        setLiveUpdates(freshUpdates)
+        setArticles(updatedArticles || [])
+        setLiveUpdates(freshUpdates || [])
       } catch (err) {
         console.error('Failed to refresh live content:', err)
       }
