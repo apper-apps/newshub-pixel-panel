@@ -17,37 +17,57 @@ class LiveUpdateService {
     }
   }
 
-  async getAll() {
+async getAll(limit = 20, offset = 0) {
     try {
       if (!this.apperClient) this.initializeClient()
       
+      // Optimized live updates query with pagination
       const params = {
         fields: [
           { field: { Name: "Name" } },
           { field: { Name: "articleId" } },
           { field: { Name: "content" } },
-          { field: { Name: "timestamp" } },
-          { field: { Name: "Tags" } }
+          { field: { Name: "timestamp" } }
         ],
         orderBy: [
           { fieldName: "timestamp", sorttype: "DESC" }
-        ]
+        ],
+        pagingInfo: {
+          limit: Math.min(limit, 50), // Performance limit for live updates
+          offset: Math.max(offset, 0)
+        }
       }
       
       const response = await this.apperClient.fetchRecords(this.tableName, params)
       
       if (!response.success) {
-        console.error(response.message)
+        console.error(`Database query failed for live updates: ${response.message}`)
         toast.error(response.message)
         return []
       }
       
-      return response.data || []
+      // Return optimized response with metadata
+      const updates = response.data || []
+      
+      // Add performance logging for monitoring
+      if (updates.length > 0) {
+        const latestUpdate = new Date(updates[0].timestamp)
+        const now = new Date()
+        const timeDiff = now - latestUpdate
+        
+        // Log if latest update is older than 1 hour (potential issue)
+        if (timeDiff > 3600000) {
+          console.warn(`Latest live update is ${Math.round(timeDiff / 60000)} minutes old`)
+        }
+      }
+      
+      return updates
+      
     } catch (error) {
       if (error?.response?.data?.message) {
-        console.error("Error fetching live updates:", error?.response?.data?.message)
+        console.error("Database error fetching live updates:", error?.response?.data?.message)
       } else {
-        console.error(error.message)
+        console.error("Live updates service error:", error.message)
       }
       return []
     }

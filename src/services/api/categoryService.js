@@ -17,10 +17,11 @@ class CategoryService {
     }
   }
 
-  async getAll() {
+async getAll(includeInactive = false) {
     try {
       if (!this.apperClient) this.initializeClient()
       
+      // Optimized category query with conditional active filter
       const params = {
         fields: [
           { field: { Name: "Name" } },
@@ -29,28 +30,54 @@ class CategoryService {
           { field: { Name: "color" } },
           { field: { Name: "icon" } },
           { field: { Name: "isActive" } },
-          { field: { Name: "sortOrder" } },
-          { field: { Name: "Tags" } }
+          { field: { Name: "sortOrder" } }
         ],
         orderBy: [
-          { fieldName: "sortOrder", sorttype: "ASC" }
+          { fieldName: "sortOrder", sorttype: "ASC" },
+          { fieldName: "Name", sorttype: "ASC" }
+        ],
+        pagingInfo: {
+          limit: 100, // Categories are typically fewer, reasonable limit
+          offset: 0
+        }
+      }
+      
+      // Add active filter unless explicitly requesting inactive categories
+      if (!includeInactive) {
+        params.where = [
+          {
+            FieldName: "isActive",
+            Operator: "EqualTo",
+            Values: [true]
+          }
         ]
       }
       
       const response = await this.apperClient.fetchRecords(this.tableName, params)
       
       if (!response.success) {
-        console.error(response.message)
+        console.error(`Database query failed for categories: ${response.message}`)
         toast.error(response.message)
         return []
       }
       
-      return response.data || []
+      // Return sorted and filtered categories
+      const categories = response.data || []
+      
+      // Additional client-side sorting for consistency
+      return categories.sort((a, b) => {
+        const sortOrderA = parseInt(a.sortOrder) || 999
+        const sortOrderB = parseInt(b.sortOrder) || 999
+        return sortOrderA === sortOrderB 
+          ? a.Name.localeCompare(b.Name)
+          : sortOrderA - sortOrderB
+      })
+      
     } catch (error) {
       if (error?.response?.data?.message) {
-        console.error("Error fetching categories:", error?.response?.data?.message)
+        console.error("Database error fetching categories:", error?.response?.data?.message)
       } else {
-        console.error(error.message)
+        console.error("Category service error:", error.message)
       }
       return []
     }

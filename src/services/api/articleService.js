@@ -6,8 +6,7 @@ class ArticleService {
     this.apperClient = null
     this.initializeClient()
   }
-
-  initializeClient() {
+initializeClient() {
     if (typeof window !== 'undefined' && window.ApperSDK) {
       const { ApperClient } = window.ApperSDK
       this.apperClient = new ApperClient({
@@ -17,20 +16,19 @@ class ArticleService {
     }
   }
 
-  async getAll() {
+  async getAll(limit = 50, offset = 0) {
     try {
       if (!this.apperClient) this.initializeClient()
       
+      // Optimized field selection for list view - exclude heavy content field
       const params = {
         fields: [
           { field: { Name: "Name" } },
           { field: { Name: "title" } },
           { field: { Name: "summary" } },
-          { field: { Name: "content" } },
           { field: { Name: "category" } },
           { field: { Name: "author" } },
           { field: { Name: "publishedAt" } },
-          { field: { Name: "updatedAt" } },
           { field: { Name: "imageUrl" } },
           { field: { Name: "featured" } },
           { field: { Name: "isLive" } },
@@ -40,32 +38,41 @@ class ArticleService {
         ],
         orderBy: [
           { fieldName: "publishedAt", sorttype: "DESC" }
-        ]
+        ],
+        pagingInfo: {
+          limit: Math.min(limit, 100), // Cap maximum limit for performance
+          offset: Math.max(offset, 0)
+        }
       }
-      
-      const response = await this.apperClient.fetchRecords(this.tableName, params)
+const response = await this.apperClient.fetchRecords(this.tableName, params)
       
       if (!response.success) {
-        console.error(response.message)
+        console.error(`Database query failed for articles: ${response.message}`)
         toast.error(response.message)
         return []
       }
       
-      return response.data || []
+      // Return optimized response with pagination info
+      return {
+        data: response.data || [],
+        total: response.total || 0,
+        hasMore: (response.data?.length || 0) === params.pagingInfo.limit
+      }
     } catch (error) {
       if (error?.response?.data?.message) {
-        console.error("Error fetching articles:", error?.response?.data?.message)
+        console.error("Database error fetching articles:", error?.response?.data?.message)
       } else {
-        console.error(error.message)
+        console.error("Article service error:", error.message)
       }
-      return []
+      return { data: [], total: 0, hasMore: false }
     }
   }
 
   async getById(id) {
-    try {
+try {
       if (!this.apperClient) this.initializeClient()
       
+      // Optimized field selection for single article view - include all fields
       const params = {
         fields: [
           { field: { Name: "Name" } },
@@ -88,7 +95,7 @@ class ArticleService {
       const response = await this.apperClient.getRecordById(this.tableName, parseInt(id), params)
       
       if (!response.success) {
-        console.error(response.message)
+        console.error(`Database query failed for article ID ${id}: ${response.message}`)
         toast.error(response.message)
         return null
       }
@@ -96,28 +103,27 @@ class ArticleService {
       return response.data
     } catch (error) {
       if (error?.response?.data?.message) {
-        console.error(`Error fetching article with ID ${id}:`, error?.response?.data?.message)
+        console.error(`Database error fetching article ID ${id}:`, error?.response?.data?.message)
       } else {
-        console.error(error.message)
+        console.error(`Article service error for ID ${id}:`, error.message)
       }
       return null
     }
   }
 
   async getByCategory(category) {
-    try {
+try {
       if (!this.apperClient) this.initializeClient()
       
+      // Optimized query for category filtering with pagination
       const params = {
         fields: [
           { field: { Name: "Name" } },
           { field: { Name: "title" } },
           { field: { Name: "summary" } },
-          { field: { Name: "content" } },
           { field: { Name: "category" } },
           { field: { Name: "author" } },
           { field: { Name: "publishedAt" } },
-          { field: { Name: "updatedAt" } },
           { field: { Name: "imageUrl" } },
           { field: { Name: "featured" } },
           { field: { Name: "isLive" } },
@@ -134,13 +140,17 @@ class ArticleService {
         ],
         orderBy: [
           { fieldName: "publishedAt", sorttype: "DESC" }
-        ]
+        ],
+        pagingInfo: {
+          limit: 25, // Optimized limit for category pages
+          offset: 0
+        }
       }
       
       const response = await this.apperClient.fetchRecords(this.tableName, params)
       
       if (!response.success) {
-        console.error(response.message)
+        console.error(`Database query failed for category ${category}: ${response.message}`)
         toast.error(response.message)
         return []
       }
@@ -148,41 +158,47 @@ class ArticleService {
       return response.data || []
     } catch (error) {
       if (error?.response?.data?.message) {
-        console.error("Error fetching articles by category:", error?.response?.data?.message)
+        console.error(`Database error fetching category ${category}:`, error?.response?.data?.message)
       } else {
-        console.error(error.message)
+        console.error(`Category filter error for ${category}:`, error.message)
       }
       return []
     }
   }
 
   async getFeatured() {
-    try {
+try {
       if (!this.apperClient) this.initializeClient()
       
+      // Optimized query for featured article - minimal fields for performance
       const params = {
         fields: [
           { field: { Name: "Name" } },
           { field: { Name: "title" } },
           { field: { Name: "summary" } },
-          { field: { Name: "content" } },
           { field: { Name: "category" } },
           { field: { Name: "author" } },
           { field: { Name: "publishedAt" } },
-          { field: { Name: "updatedAt" } },
           { field: { Name: "imageUrl" } },
           { field: { Name: "featured" } },
           { field: { Name: "isLive" } },
           { field: { Name: "viewCount" } },
-          { field: { Name: "status" } },
-          { field: { Name: "Tags" } }
+          { field: { Name: "status" } }
         ],
         where: [
           {
             FieldName: "featured",
             Operator: "EqualTo",
             Values: [true]
+          },
+          {
+            FieldName: "status",
+            Operator: "EqualTo",
+            Values: ["published"]
           }
+        ],
+        orderBy: [
+          { fieldName: "publishedAt", sorttype: "DESC" }
         ],
         pagingInfo: { limit: 1 }
       }
@@ -190,112 +206,127 @@ class ArticleService {
       const response = await this.apperClient.fetchRecords(this.tableName, params)
       
       if (!response.success) {
-        console.error(response.message)
+        console.error(`Database query failed for featured article: ${response.message}`)
         return null
       }
       
       return response.data?.[0] || null
     } catch (error) {
       if (error?.response?.data?.message) {
-        console.error("Error fetching featured article:", error?.response?.data?.message)
+        console.error("Database error fetching featured article:", error?.response?.data?.message)
       } else {
-        console.error(error.message)
+        console.error("Featured article service error:", error.message)
       }
       return null
     }
   }
 
   async getMostPopular(limit = 5) {
-    try {
+try {
       if (!this.apperClient) this.initializeClient()
       
+      // Optimized query for popular articles - focus on essential display fields
       const params = {
         fields: [
           { field: { Name: "Name" } },
           { field: { Name: "title" } },
           { field: { Name: "summary" } },
-          { field: { Name: "content" } },
           { field: { Name: "category" } },
           { field: { Name: "author" } },
           { field: { Name: "publishedAt" } },
-          { field: { Name: "updatedAt" } },
           { field: { Name: "imageUrl" } },
-          { field: { Name: "featured" } },
-          { field: { Name: "isLive" } },
           { field: { Name: "viewCount" } },
-          { field: { Name: "status" } },
-          { field: { Name: "Tags" } }
+          { field: { Name: "isLive" } },
+          { field: { Name: "status" } }
+        ],
+        where: [
+          {
+            FieldName: "status",
+            Operator: "EqualTo",
+            Values: ["published"]
+          }
         ],
         orderBy: [
           { fieldName: "viewCount", sorttype: "DESC" }
         ],
-        pagingInfo: { limit }
+        pagingInfo: { 
+          limit: Math.min(limit, 20), // Cap for performance
+          offset: 0
+        }
       }
       
       const response = await this.apperClient.fetchRecords(this.tableName, params)
       
       if (!response.success) {
-        console.error(response.message)
+        console.error(`Database query failed for popular articles: ${response.message}`)
         return []
       }
       
       return response.data || []
     } catch (error) {
       if (error?.response?.data?.message) {
-        console.error("Error fetching popular articles:", error?.response?.data?.message)
+        console.error("Database error fetching popular articles:", error?.response?.data?.message)
       } else {
-        console.error(error.message)
+        console.error("Popular articles service error:", error.message)
       }
       return []
     }
   }
 
-  async getLiveArticles() {
+async getLiveArticles(limit = 10) {
     try {
       if (!this.apperClient) this.initializeClient()
       
+      // Optimized query for live articles - prioritize performance and freshness
       const params = {
         fields: [
           { field: { Name: "Name" } },
           { field: { Name: "title" } },
           { field: { Name: "summary" } },
-          { field: { Name: "content" } },
           { field: { Name: "category" } },
           { field: { Name: "author" } },
           { field: { Name: "publishedAt" } },
           { field: { Name: "updatedAt" } },
           { field: { Name: "imageUrl" } },
-          { field: { Name: "featured" } },
           { field: { Name: "isLive" } },
           { field: { Name: "viewCount" } },
-          { field: { Name: "status" } },
-          { field: { Name: "Tags" } }
+          { field: { Name: "status" } }
         ],
         where: [
           {
             FieldName: "isLive",
             Operator: "EqualTo",
             Values: [true]
+          },
+          {
+            FieldName: "status",
+            Operator: "EqualTo",
+            Values: ["published"]
           }
         ],
         orderBy: [
+          { fieldName: "updatedAt", sorttype: "DESC" }, // Use updatedAt for live content
           { fieldName: "publishedAt", sorttype: "DESC" }
-        ]
+        ],
+        pagingInfo: {
+          limit: Math.min(limit, 15), // Reasonable limit for live content
+          offset: 0
+        }
       }
       
       const response = await this.apperClient.fetchRecords(this.tableName, params)
       
       if (!response.success) {
-        console.error(response.message)
+        console.error(`Database query failed for live articles: ${response.message}`)
         return []
       }
       
       return response.data || []
     } catch (error) {
       if (error?.response?.data?.message) {
-        console.error("Error fetching live articles:", error?.response?.data?.message)
+        console.error("Database error fetching live articles:", error?.response?.data?.message)
       } else {
-        console.error(error.message)
+        console.error("Live articles service error:", error.message)
       }
       return []
     }
@@ -471,20 +502,19 @@ class ArticleService {
     }
   }
 
-  async search(query) {
+async search(query, limit = 20, offset = 0) {
     try {
       if (!this.apperClient) this.initializeClient()
       
+      // Optimized search query - exclude content field for performance
       const params = {
         fields: [
           { field: { Name: "Name" } },
           { field: { Name: "title" } },
           { field: { Name: "summary" } },
-          { field: { Name: "content" } },
           { field: { Name: "category" } },
           { field: { Name: "author" } },
           { field: { Name: "publishedAt" } },
-          { field: { Name: "updatedAt" } },
           { field: { Name: "imageUrl" } },
           { field: { Name: "featured" } },
           { field: { Name: "isLive" } },
@@ -494,41 +524,34 @@ class ArticleService {
         ],
         whereGroups: [
           {
-            operator: "OR",
+            operator: "AND",
             subGroups: [
               {
+                operator: "OR",
                 conditions: [
                   {
                     fieldName: "title",
                     operator: "Contains",
                     values: [query]
-                  }
-                ]
-              },
-              {
-                conditions: [
+                  },
                   {
                     fieldName: "summary",
                     operator: "Contains",
                     values: [query]
-                  }
-                ]
-              },
-              {
-                conditions: [
-                  {
-                    fieldName: "content",
-                    operator: "Contains",
-                    values: [query]
-                  }
-                ]
-              },
-              {
-                conditions: [
+                  },
                   {
                     fieldName: "Tags",
                     operator: "Contains",
                     values: [query]
+                  }
+                ]
+              },
+              {
+                conditions: [
+                  {
+                    fieldName: "status",
+                    operator: "EqualTo",
+                    values: ["published"]
                   }
                 ]
               }
@@ -537,36 +560,47 @@ class ArticleService {
         ],
         orderBy: [
           { fieldName: "publishedAt", sorttype: "DESC" }
-        ]
+        ],
+        pagingInfo: {
+          limit: Math.min(limit, 50), // Performance limit for search
+          offset: Math.max(offset, 0)
+        }
       }
       
       const response = await this.apperClient.fetchRecords(this.tableName, params)
       
       if (!response.success) {
-        console.error(response.message)
+        console.error(`Database search query failed for "${query}": ${response.message}`)
         return []
       }
       
       return response.data || []
     } catch (error) {
       if (error?.response?.data?.message) {
-        console.error("Error searching articles:", error?.response?.data?.message)
+        console.error(`Database error searching articles for "${query}":`, error?.response?.data?.message)
       } else {
-        console.error(error.message)
+        console.error(`Search service error for "${query}":`, error.message)
       }
       return []
     }
   }
 
-  async incrementViewCount(id) {
+async incrementViewCount(id) {
     try {
+      // Optimized view count increment - fetch minimal data
       const article = await this.getById(id)
-      if (article) {
-        const newViewCount = (article.viewCount || 0) + 1
+      if (article && article.viewCount !== undefined) {
+        const newViewCount = (parseInt(article.viewCount) || 0) + 1
         await this.update(id, { viewCount: newViewCount })
+        
+        // Log performance metrics for analytics
+        if (newViewCount % 100 === 0) {
+          console.log(`Article ${id} reached ${newViewCount} views`)
+        }
       }
     } catch (error) {
-      console.error("Error incrementing view count:", error.message)
+      // Non-blocking error handling for view count
+      console.error(`Database error incrementing view count for article ${id}:`, error.message)
     }
   }
 }
