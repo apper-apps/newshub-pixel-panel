@@ -75,7 +75,15 @@ const Header = () => {
           <div className="hidden lg:flex items-center space-x-6">
             <CategoryNav direction="horizontal" />
             
-            <div className="flex items-center space-x-1">
+<div className="flex items-center space-x-3">
+              <Link
+                to="/admin"
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-accent to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105"
+              >
+                <ApperIcon name="Shield" size={16} />
+                <span>Admin</span>
+              </Link>
+              
               <Link
                 to="/live"
                 className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-error to-red-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105"
