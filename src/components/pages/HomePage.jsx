@@ -299,10 +299,9 @@ const [allArticles, featured, popular, updates, breakingArticles] = await Promis
                         </motion.div>
                       ))}
                   </div>
-                </div>
+</div>
               ))}
             </motion.section>
-            )}
 
             {/* Secondary Stories Grid */}
             <motion.section
