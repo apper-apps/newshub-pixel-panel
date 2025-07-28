@@ -1,0 +1,62 @@
+[
+  {
+    "Id": 1,
+    "name": "Breaking News",
+    "slug": "breaking",
+    "order": 1
+  },
+  {
+    "Id": 2,
+    "name": "World",
+    "slug": "world",
+    "order": 2
+  },
+  {
+    "Id": 3,
+    "name": "Politics",
+    "slug": "politics",
+    "order": 3
+  },
+  {
+    "Id": 4,
+    "name": "Business",
+    "slug": "business",
+    "order": 4
+  },
+  {
+    "Id": 5,
+    "name": "Technology",
+    "slug": "technology",
+    "order": 5
+  },
+  {
+    "Id": 6,
+    "name": "Science",
+    "slug": "science",
+    "order": 6
+  },
+  {
+    "Id": 7,
+    "name": "Health",
+    "slug": "health",
+    "order": 7
+  },
+  {
+    "Id": 8,
+    "name": "Sports",
+    "slug": "sports",
+    "order": 8
+  },
+  {
+    "Id": 9,
+    "name": "Culture",
+    "slug": "culture",
+    "order": 9
+  },
+  {
+    "Id": 10,
+    "name": "Opinion",
+    "slug": "opinion",
+    "order": 10
+  }
+]

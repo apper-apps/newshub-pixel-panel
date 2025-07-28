@@ -1,0 +1,37 @@
+[
+  {
+    "Id": 1,
+    "name": "Admin User",
+    "email": "admin@newshub.com",
+    "role": "admin",
+    "permissions": ["create", "edit", "delete", "publish", "manage_users"]
+  },
+  {
+    "Id": 2,
+    "name": "Sarah Chen",
+    "email": "sarah.chen@newshub.com",
+    "role": "editor",
+    "permissions": ["create", "edit", "publish"]
+  },
+  {
+    "Id": 3,
+    "name": "Marcus Rodriguez",
+    "email": "marcus.rodriguez@newshub.com",
+    "role": "reporter",
+    "permissions": ["create", "edit"]
+  },
+  {
+    "Id": 4,
+    "name": "Elena Volkov",
+    "email": "elena.volkov@newshub.com",
+    "role": "reporter",
+    "permissions": ["create", "edit"]
+  },
+  {
+    "Id": 5,
+    "name": "Tony Mitchell",
+    "email": "tony.mitchell@newshub.com",
+    "role": "reporter",
+    "permissions": ["create", "edit"]
+  }
+]

@@ -1,0 +1,80 @@
+@import 'react-toastify/dist/ReactToastify.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom toast styling */
+.Toastify__toast {
+  font-family: 'Inter', sans-serif;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.Toastify__toast-container {
+  width: 320px;
+}
+
+.Toastify__toast--success {
+  background: linear-gradient(135deg, #00A652, #00D164);
+  color: white;
+}
+
+.Toastify__toast--error {
+  background: linear-gradient(135deg, #DC3545, #FF4757);
+  color: white;
+}
+
+.Toastify__toast--info {
+  background: linear-gradient(135deg, #17A2B8, #20C3D8);
+  color: white;
+}
+
+.Toastify__progress-bar {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Shimmer loading effect */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 0px,
+    #e0e0e0 40px,
+    #f0f0f0 80px
+  );
+  background-size: 200px;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus styles */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #FF6B00;
+  outline-offset: 2px;
+}

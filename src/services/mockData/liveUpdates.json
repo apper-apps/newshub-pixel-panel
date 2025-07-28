@@ -1,0 +1,38 @@
+[
+  {
+    "Id": 1,
+    "articleId": "1",
+    "content": "EU delegates announce additional commitment to phase out coal power by 2030, exceeding previous targets set in the agreement.",
+    "timestamp": "2024-01-15T11:45:00Z"
+  },
+  {
+    "Id": 2,
+    "articleId": "1",
+    "content": "China confirms participation in new international carbon trading system, marking significant shift in environmental policy.",
+    "timestamp": "2024-01-15T11:20:00Z"
+  },
+  {
+    "Id": 3,
+    "articleId": "1",
+    "content": "Youth climate activists gather outside summit venue, demanding stronger enforcement mechanisms for emission targets.",
+    "timestamp": "2024-01-15T10:55:00Z"
+  },
+  {
+    "Id": 4,
+    "articleId": "4",
+    "content": "Phoenix Eagles' victory parade scheduled for tomorrow at 2 PM, expected to draw over 100,000 fans to downtown area.",
+    "timestamp": "2024-01-15T02:15:00Z"
+  },
+  {
+    "Id": 5,
+    "articleId": "4",
+    "content": "Championship MVP Jake Morrison announces $1 million donation to youth sports programs in Phoenix.",
+    "timestamp": "2024-01-15T01:30:00Z"
+  },
+  {
+    "Id": 6,
+    "articleId": "2",
+    "content": "ScienceAI successfully identifies potential treatment pathway for rare neurological disorder in latest demonstration.",
+    "timestamp": "2024-01-15T09:40:00Z"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "Id": 1,
+    "title": "Breaking: Major Climate Summit Reaches Historic Agreement",
+    "summary": "World leaders announce unprecedented commitment to reduce carbon emissions by 50% within the next decade, marking a turning point in global climate action.",
+    "content": "In a historic moment for environmental policy, delegates from 195 countries have reached a groundbreaking agreement at the Global Climate Summit in Geneva. The comprehensive deal includes binding commitments to reduce greenhouse gas emissions by 50% by 2034, with developed nations pledging $500 billion in climate financing for developing countries. The agreement also establishes a new international carbon trading system and sets ambitious targets for renewable energy adoption. Environmental groups have hailed the deal as the most significant climate accord since the Paris Agreement, while industry leaders express cautious optimism about the economic implications of the transition to clean energy.",
+    "imageUrl": "https://images.unsplash.com/photo-1569163139394-de4e5f43e4e3?w=800&h=600&fit=crop",
+    "category": "World",
+    "author": "Sarah Chen",
+    "publishedAt": "2024-01-15T10:30:00Z",
+    "isLive": true,
+    "viewCount": 15420
+  },
+  {
+    "Id": 2,
+    "title": "Tech Giants Announce Revolutionary AI Breakthrough",
+    "summary": "Leading technology companies unveil advanced artificial intelligence system capable of solving complex scientific problems, potentially accelerating medical research and climate solutions.",
+    "content": "A consortium of major technology companies including Google, Microsoft, and Meta have announced a revolutionary advancement in artificial intelligence that could transform scientific research. The new AI system, dubbed 'ScienceAI', demonstrates unprecedented ability to analyze complex scientific data and propose novel solutions to longstanding problems in medicine, physics, and environmental science. Initial tests show the system successfully identified potential treatments for rare diseases and proposed innovative approaches to carbon capture technology. The announcement has sparked both excitement and concern within the scientific community, with researchers praising the potential for accelerated discovery while ethicists raise questions about the implications of AI-driven scientific breakthroughs.",
+    "imageUrl": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=600&fit=crop",
+    "category": "Technology",
+    "author": "Marcus Rodriguez",
+    "publishedAt": "2024-01-15T08:15:00Z",
+    "isLive": false,
+    "viewCount": 8932
+  },
+  {
+    "Id": 3,
+    "title": "Global Markets Surge Following Economic Policy Announcement",
+    "summary": "International stock markets reach record highs after coordinated economic stimulus measures announced by G7 nations, boosting investor confidence worldwide.",
+    "content": "Global financial markets experienced their strongest rally in over a decade following the announcement of coordinated economic stimulus measures by G7 nations. The comprehensive package includes infrastructure investments, tax incentives for renewable energy, and support for emerging technologies. The Dow Jones Industrial Average gained 3.2%, while European markets saw similar gains, with the FTSE 100 and DAX both reaching new record highs. Asian markets responded positively in overnight trading, with the Nikkei and Hang Seng indices posting significant gains. Economists attribute the market surge to investor confidence in the coordinated approach to economic recovery and the focus on sustainable growth initiatives.",
+    "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop",
+    "category": "Business",
+    "author": "Elena Volkov",
+    "publishedAt": "2024-01-15T07:45:00Z",
+    "isLive": false,
+    "viewCount": 12056
+  },
+  {
+    "Id": 4,
+    "title": "Championship Final Delivers Historic Upset Victory",
+    "summary": "Underdog team defeats three-time defending champions in dramatic overtime finish, culminating one of the most surprising seasons in sports history.",
+    "content": "In what many are calling the greatest upset in championship history, the Phoenix Eagles defeated the three-time defending champion Boston Titans 28-24 in a thrilling overtime finish. The Eagles, who entered the playoffs as the lowest-seeded team, completed their Cinderella story with a game-winning touchdown pass with just 47 seconds remaining in overtime. The victory caps off a remarkable season for Phoenix, who started the year with the worst record in the league before mounting an unprecedented late-season surge. Team captain Jake Morrison, who threw for 384 yards and three touchdowns, was named championship MVP. The upset victory has sent the city of Phoenix into celebration, with thousands of fans gathering downtown to celebrate their team's historic achievement.",
+    "imageUrl": "https://images.unsplash.com/photo-1544547285-6bb3d201c6b4?w=800&h=600&fit=crop",
+    "category": "Sports",
+    "author": "Tony Mitchell",
+    "publishedAt": "2024-01-14T23:30:00Z",
+    "isLive": false,
+    "viewCount": 21340
+  },
+  {
+    "Id": 5,
+    "title": "Medical Breakthrough: New Treatment Shows Promise for Alzheimer's",
+    "summary": "Clinical trials reveal significant cognitive improvement in Alzheimer's patients treated with innovative gene therapy, offering new hope for millions of families worldwide.",
+    "content": "Researchers at the Institute for Neurological Sciences have announced promising results from Phase III clinical trials of a revolutionary gene therapy treatment for Alzheimer's disease. The treatment, which targets the underlying genetic mechanisms of the disease, showed significant cognitive improvement in 78% of patients over a 12-month period. The therapy works by introducing modified genes that help clear harmful protein deposits from the brain while promoting the growth of healthy neural connections. Dr. Jennifer Walsh, the lead researcher, described the results as 'unprecedented' and noted that many patients showed improvement in memory, reasoning, and daily functioning. The treatment is now being fast-tracked for regulatory approval, with the potential to help millions of Alzheimer's patients worldwide.",
+    "imageUrl": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=600&fit=crop",
+    "category": "Health",
+    "author": "Dr. Michael Chen",
+    "publishedAt": "2024-01-14T16:20:00Z",
+    "isLive": false,
+    "viewCount": 9876
+  },
+  {
+    "Id": 6,
+    "title": "Space Mission Discovers Potentially Habitable Exoplanet",
+    "summary": "NASA's advanced space telescope identifies Earth-like planet in habitable zone of nearby star system, raising possibilities for extraterrestrial life.",
+    "content": "NASA scientists have announced the discovery of an Earth-like exoplanet located in the habitable zone of Kepler-442, a star system just 1,200 light-years away. The planet, designated Kepler-442b, shows remarkable similarities to Earth, including a similar size, estimated surface temperature, and the potential for liquid water. Advanced spectroscopic analysis suggests the presence of an atmosphere with water vapor and possibly oxygen. The discovery was made using NASA's next-generation space telescope, which can detect subtle changes in starlight as planets pass in front of their host stars. Dr. Lisa Park, the mission's principal investigator, emphasized that while the planet appears promising for habitability, further observations are needed to confirm the presence of life-supporting conditions.",
+    "imageUrl": "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+    "category": "Science",
+    "author": "Dr. Robert Kim",
+    "publishedAt": "2024-01-14T14:10:00Z",
+    "isLive": false,
+    "viewCount": 18765
+  },
+  {
+    "Id": 7,
+    "title": "International Trade Agreement Reshapes Global Commerce",
+    "summary": "Historic 15-nation trade pact eliminates tariffs on digital services and green technology, creating world's largest free trade zone covering 2 billion people.",
+    "content": "Fifteen nations spanning four continents have signed a comprehensive trade agreement that creates the world's largest free trade zone, covering nearly 2 billion people and 35% of global GDP. The Digital and Green Technology Trade Pact (DGTTP) eliminates tariffs on digital services, renewable energy technology, and electric vehicles while establishing common standards for data privacy and environmental protection. The agreement also includes provisions for technology transfer to developing nations and creates a $100 billion fund for green infrastructure projects. Trade ministers from participating countries describe the pact as a new model for international commerce that prioritizes sustainability and digital innovation. The agreement is expected to boost global trade by an estimated $2.3 trillion over the next decade.",
+    "imageUrl": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=600&fit=crop",
+    "category": "Politics",
+    "author": "Amanda Foster",
+    "publishedAt": "2024-01-14T11:55:00Z",
+    "isLive": false,
+    "viewCount": 7234
+  },
+  {
+    "Id": 8,
+    "title": "Cultural Festival Celebrates Global Diversity in Virtual Reality",
+    "summary": "Innovative virtual reality platform hosts international cultural festival, bringing together artists and performers from 50 countries in immersive digital experience.",
+    "content": "The first-ever Global Cultural Festival in virtual reality has successfully brought together over 500,000 participants from around the world, showcasing the potential of immersive technology to connect diverse communities. The three-day event featured traditional music, dance, art exhibitions, and culinary experiences from 50 countries, all accessible through VR headsets and online platforms. Participants could visit virtual recreations of iconic cultural sites, attend live performances by international artists, and engage in interactive workshops led by master craftspeople. The festival's innovative approach to cultural exchange has been praised by UNESCO and cultural organizations worldwide. Event organizer Maria Santos noted that the virtual format allowed participation from remote communities that would otherwise be unable to attend international cultural events.",
+    "imageUrl": "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&h=600&fit=crop",
+    "category": "Culture",
+    "author": "David Thompson",
+    "publishedAt": "2024-01-14T09:30:00Z",
+    "isLive": false,
+    "viewCount": 5672
+  }
+]
