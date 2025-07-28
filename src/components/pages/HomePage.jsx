@@ -57,13 +57,9 @@ const [allArticles, featured, popular, updates, breakingArticles] = await Promis
     }, 300000)
     
     return () => clearInterval(interval)
-  }, [])
+}, [])
 
-  if (loading) return <Loading />
-  if (error) return <Error message={error} onRetry={loadData} />
-  if (!articles.length) return <Empty title="No news available" message="Check back later for the latest updates." />
-
-// Transform articles into category groups with metadata
+  // Transform articles into category groups with metadata
   const categoryGroups = React.useMemo(() => {
     if (!articles || !Array.isArray(articles)) return [];
     
@@ -89,6 +85,9 @@ const [allArticles, featured, popular, updates, breakingArticles] = await Promis
     }).filter(group => group.articles.length > 0);
   }, [articles]);
 
+  if (loading) return <Loading />
+  if (error) return <Error message={error} onRetry={loadData} />
+  if (!articles.length) return <Empty title="No news available" message="Check back later for the latest updates." />
   const secondaryArticles = articles.filter(article => article.Id !== featuredArticle?.Id).slice(0, 6)
 
   return (
