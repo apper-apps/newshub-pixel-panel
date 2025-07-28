@@ -380,39 +380,48 @@ const interval = setInterval(async () => {
               </div>
             </motion.section>
 
-            {/* Category Sections */}
-            {Object.entries(categoryGroups).slice(0, 3).map(([category, categoryArticles], categoryIndex) => (
-              <motion.section
-                key={category}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + categoryIndex * 0.1 }}
-                className="space-y-6"
-              >
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-display font-bold text-secondary flex items-center space-x-3">
-                    <span>{category}</span>
-                    <Badge variant="category">{categoryArticles.length}</Badge>
-                  </h2>
-                  <Link to={`/category/${category.toLowerCase()}`}>
-                    <Button variant="ghost" size="sm">
-                      See full coverage
-                      <ApperIcon name="ArrowRight" size={16} className="ml-2" />
-                    </Button>
-                  </Link>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {categoryArticles.slice(0, 3).map((article) => (
-                    <ArticleCard 
-                      key={article.Id} 
-                      article={article} 
-                      showCategory={false}
-                    />
-                  ))}
-                </div>
-              </motion.section>
-            ))}
+{/* Category Sections */}
+            {Object.entries(categoryGroups).slice(0, 3).map(([category, categoryArticles], categoryIndex) => {
+              // Ensure categoryArticles is an array and has content
+              const articles = Array.isArray(categoryArticles) ? categoryArticles : [];
+              const articlesToShow = articles.slice(0, 3);
+              
+              // Skip categories with no valid articles
+              if (articles.length === 0) return null;
+              
+              return (
+                <motion.section
+                  key={category}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 + categoryIndex * 0.1 }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-display font-bold text-secondary flex items-center space-x-3">
+                      <span>{category}</span>
+                      <Badge variant="category">{articles.length}</Badge>
+                    </h2>
+                    <Link to={`/category/${category.toLowerCase()}`}>
+                      <Button variant="ghost" size="sm">
+                        See full coverage
+                        <ApperIcon name="ArrowRight" size={16} className="ml-2" />
+                      </Button>
+                    </Link>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {articlesToShow.map((article) => (
+                      <ArticleCard 
+                        key={article?.Id || Math.random()} 
+                        article={article} 
+                        showCategory={false}
+                      />
+                    ))}
+                  </div>
+                </motion.section>
+              );
+            }).filter(Boolean)}
           </div>
 
           {/* Sidebar */}
